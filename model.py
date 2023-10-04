@@ -18,20 +18,19 @@ class NewsClassifier(nn.Module):
         # We will use the BERT model to extract meaningful representations of our text
         # that we will feed to a classifier. We will use the pre-trained weights of the
         # BERT model.
-        self.bert = BertModel.from_pretrained(self.BERT_MODEL_NAME, return_dict=True)
+        # self.bert = BertModel.from_pretrained(self.BERT_MODEL_NAME, return_dict=True)
         # TODO Freeze BERT weights?
         # for name, param in self.bert.named_parameters():
         #     param.requires_grad = False
 
-        # # Load the pre-trained BERT model configuration
-        # # Increase dropout to 0.5
-        # configuration = AutoConfig.from_pretrained('bert-base-uncased')
-        # configuration.hidden_dropout_prob = 0.5  # Set your desired dropout rate
-        # configuration.attention_probs_dropout_prob = 0.5
-        #
-        # # Instantiate the BERT model with the customized configuration
-        # self.bert = BertModel.from_pretrained(pretrained_model_name_or_path='bert-base-uncased',
-        #                                       config=configuration)
+        # Load the pre-trained BERT model configuration
+        configuration = AutoConfig.from_pretrained('bert-base-uncased')
+        configuration.hidden_dropout_prob = 0.1
+        configuration.attention_probs_dropout_prob = 0.1
+
+        # Instantiate the BERT model with the customized configuration
+        self.bert = BertModel.from_pretrained(pretrained_model_name_or_path='bert-base-uncased',
+                                              config=configuration)
 
         # ---------------------------------------------------------------------
         self.classifier = nn.Linear(self.bert.config.hidden_size, n_classes)
