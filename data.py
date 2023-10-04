@@ -1,6 +1,13 @@
 import torch
+
+
+import string
+import re
+
 import numpy as np
 import pandas as pd
+from nltk.corpus import stopwords
+cached_stop_words = stopwords.words("english")
 
 from torch.utils.data import Dataset, DataLoader
 from transformers import BertTokenizer
@@ -64,17 +71,58 @@ class TextDataset(Dataset):
         )
 
         return dict(
-            comment_text=text,
+            text=text,
+            label=label_vec,
             input_ids=encoding["input_ids"].flatten(),
-            attention_mask=encoding["attention_mask"].flatten(),
-            labels=label_vec
+            attention_mask=encoding["attention_mask"].flatten()
         )
 
 
 def get_dataloader(tokenizer, df, batch_size, device):
+    """Create dataloader for the given dataframe."""
     ds = TextDataset(df, tokenizer, max_token_len=MAX_TOKEN_LEN, device=device)
     dr = DataLoader(ds, batch_size=batch_size, shuffle=True)
     return dr
+
+
+def clean_text(text):
+    """ Preprocess the text.
+        Includes:
+            - Convert text to lowercase
+            - Remove newlines
+            - Remove numbers
+            - Remove punctuation
+            - Remove stopwords
+    """
+    text = text.lower()
+    text = text.replace('\n', ' ')
+    text = re.sub(r'\d+', '', text)
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    text = ' '.join([word for word in text.split() if word not in cached_stop_words])
+    return text
+
+
+def preprocess_dataframe(df, column_for_preprocessing='title_text'):
+    """
+    Preprocess the dataframe. This includes:
+        - label mapping to 0 and 1 for non-news and news respectively.
+        - Change the column names to be more descriptive. And drop the original columns.
+        - Preprocess the text (lowercase, remove punctuation, remove stopwords).
+    """
+    # label mapping to 0 and 1 for non-news and news respectively.
+    df['label'] = df[CONTENT_CLASS_COLUMN].map(LABEL_MAP)
+
+    # Change the column names to be more descriptive. And drop the original columns.
+    # This is useful when we want to use the same code for other datasets.
+    df['title'] = df['scraped_title']
+    df['text'] = df['scraped_text']
+    df['title_text'] = df['title'] + ' ' + df['text']
+    df = df[['label', 'title', 'text', 'title_text']]
+
+    # Preprocess the text
+    df['title_text'] = df['title_text'].apply(clean_text)
+
+    return df
 
 
 def create_datasets(batch_size, device):
@@ -86,20 +134,7 @@ def create_datasets(batch_size, device):
         lambda x: POSITIVE_STR if x == POSITIVE_STR else NEGATIVE_STR)
 
     # label mapping to 0 and 1 for non-news and news respectively.
-    df['label'] = df[CONTENT_CLASS_COLUMN].map(LABEL_MAP)
-
-    # Keep only the label and the text.
-    # Create column with the title and the text and drop the rest of the columns.
-    df['title'] = df['scraped_title']
-    df['text'] = df['scraped_text']
-    df['title_text'] = df['text']  # df['title'] + ' ' + df['text']
-    df = df[['label', 'title', 'text', 'title_text']]
-
-    # TODO Clean text column. Remove punctuation, stopwords, etc. See:
-    #  https://www.kaggle.com/parulpandey/eda-and-preprocessing-for-bert
-    #  https://towardsdatascience.com/nlp-in-python-data-cleaning-6313a404a470
-    #  https://towardsdatascience.com/how-to-preprocess-text-data-using-nlp-tools-9f6dcab5ccb9
-    #  https://www.geeksforgeeks.org/text-preprocessing-in-python-set-1/
+    df = preprocess_dataframe(df)
 
     # Split the dataframe into training, test, and validation sets
     train_df = df.sample(frac=TRAIN_SET_SIZE, random_state=RANDOM_SEED)
@@ -122,3 +157,7 @@ def create_datasets(batch_size, device):
     test_dr = get_dataloader(tokenizer, test_df, batch_size, device)
 
     return train_dr, val_dr, test_dr
+
+
+if __name__ == '__main__':
+    create_datasets(batch_size=8, device=torch.device('cpu'))
