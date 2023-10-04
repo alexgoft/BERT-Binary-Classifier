@@ -9,7 +9,7 @@ from model import NewsClassifier
 from utils import plot_losses
 
 # Training parameters.
-NUM_EPOCHS = 10
+NUM_EPOCHS = 20
 BATCH_SIZE = 8
 LR = 2e-5
 
@@ -20,20 +20,20 @@ def test(test_dr, model, output_dir_path, device):
 
 def train(train_dr, val_dr, model, output_dir_path, device):
 
-    # # Adam is an optimization algorithm that can used
-    # # instead of the classical stochastic gradient descent procedure
-    # optimizer = torch.optim.Adam(model.parameters(), lr=LR)
-    # scheduler = None
+    # Adam is an optimization algorithm that can used
+    # instead of the classical stochastic gradient descent procedure
+    optimizer = torch.optim.Adam(model.parameters(), lr=LR)
+    scheduler = None
 
-    # AdamW is an Adam variant with weight decay regularization.
-    optimizer = AdamW(model.parameters(), lr=LR, correct_bias=False)
-    total_steps = len(train_dr) * NUM_EPOCHS
-    num_warmup_steps = int(total_steps * 0.1)
-    scheduler = get_linear_schedule_with_warmup(
-        optimizer,
-        num_warmup_steps=num_warmup_steps,
-        num_training_steps=total_steps
-    )
+    # # AdamW is an Adam variant with weight decay regularization.
+    # optimizer = AdamW(model.parameters(), lr=LR, correct_bias=False)
+    # total_steps = len(train_dr) * NUM_EPOCHS
+    # num_warmup_steps = int(total_steps * 0.1)
+    # scheduler = get_linear_schedule_with_warmup(
+    #     optimizer,
+    #     num_warmup_steps=num_warmup_steps,
+    #     num_training_steps=total_steps
+    # )
 
     # training loop
     best_eval_loss = float('inf')
@@ -76,7 +76,7 @@ def train_epoch(model, optimizer, train_dr, epoch_idx, every_n_batches=25, sched
     train_loss = 0.0
     for batch_idx, batch in enumerate(train_dr):
 
-        loss, output = model(batch)
+        loss, _ = model(batch)
         train_loss += loss.item()
 
         optimizer.zero_grad()
@@ -100,7 +100,7 @@ def evaluate_end_epoch(model, val_dr):
     val_loss = 0.0
     with torch.no_grad():
         for batch_idx, batch in enumerate(val_dr):
-            loss, output = model(batch)
+            loss, _ = model(batch)
 
             val_loss += loss.item()
     return round(val_loss / len(val_dr), 5)

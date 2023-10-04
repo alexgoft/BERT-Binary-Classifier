@@ -53,11 +53,7 @@ class TextDataset(Dataset):
         data_row = self.data.iloc[index]
 
         text = data_row[self.data_col]
-
         label = data_row[self.label_col]
-        label_vec = np.zeros(shape=(len(LABEL_MAP)), dtype=np.float32)
-        label_vec[label] = 1.0  # one-hot encoding of the label. 0->non-news, 1->news
-        label_vec = torch.FloatTensor(label_vec)
 
         encoding = self.tokenizer.encode_plus(
             text,
@@ -72,7 +68,7 @@ class TextDataset(Dataset):
 
         return dict(
             text=text,
-            label=label_vec,
+            label=label,
             input_ids=encoding["input_ids"].flatten(),
             attention_mask=encoding["attention_mask"].flatten()
         )

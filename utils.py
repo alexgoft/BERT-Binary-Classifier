@@ -14,14 +14,15 @@ def plot_losses(loss_values, val_losses,
     axs[0].plot(x0, loss_values, label="Train loss")
     axs[0].plot(x0, val_losses, label="Validation loss")
     axs[0].set_title('Model loss')
+    axs[0].legend(loc="upper right")
 
     # # Plot accuracy of train and validation sets.
     # axs[1].plot(x0, train_accuracies, label="Train accuracy")
     # axs[1].plot(x0, val_accuracies, label="Validation accuracy")
     # axs[1].set_title('Model accuracy')
+    # axs[1].legend(loc="upper right")
 
     plt.tight_layout()
-    plt.legend()
     plt.show()
 
 
