@@ -1,17 +1,16 @@
 import torch
 
-
 import string
 import re
-
-import numpy as np
 import pandas as pd
-from nltk.corpus import stopwords
-cached_stop_words = stopwords.words("english")
 
 from torch.utils.data import Dataset, DataLoader
 from transformers import BertTokenizer
 from utils import plot_column_histogram
+
+from nltk.corpus import stopwords
+
+cached_stop_words = stopwords.words("english")
 
 DATA_PATH = 'assignment_data_en.csv'
 CONTENT_CLASS_COLUMN = 'content_type'
@@ -20,7 +19,7 @@ NEGATIVE_STR = 'non-news'
 LABEL_MAP = {POSITIVE_STR: 1, NEGATIVE_STR: 0}
 
 TRAIN_SET_SIZE = 0.75
-VALIDATION_SET_SIZE = 0.3
+VALIDATION_SET_SIZE = 0.5
 
 MAX_TOKEN_LEN = 256
 RANDOM_SEED = 42
@@ -34,7 +33,7 @@ class TextDataset(Dataset):
             tokenizer: BertTokenizer,
             max_token_len: int = 128,
             label_col: str = 'label',
-            data_col: str = 'title_text',
+            data_col: str = 'text',
             device: torch.device = torch.device('cpu')
     ):
         self.tokenizer = tokenizer
@@ -69,7 +68,7 @@ class TextDataset(Dataset):
         return dict(
             text=text,
             label=label,
-            input_ids=encoding["input_ids"].flatten(),
+            text_tokenized=encoding["input_ids"].flatten(),
             attention_mask=encoding["attention_mask"].flatten()
         )
 
@@ -90,7 +89,7 @@ def clean_text(text):
             - Remove punctuation
             - Remove stopwords
     """
-    text = text.lower()
+    # text = text.lower()
     text = text.replace('\n', ' ')
     text = re.sub(r'\d+', '', text)
     text = text.translate(str.maketrans('', '', string.punctuation))
@@ -98,7 +97,7 @@ def clean_text(text):
     return text
 
 
-def preprocess_dataframe(df, column_for_preprocessing='title_text'):
+def preprocess_dataframe(df, column_for_preprocessing='text'):
     """
     Preprocess the dataframe. This includes:
         - label mapping to 0 and 1 for non-news and news respectively.
@@ -110,13 +109,11 @@ def preprocess_dataframe(df, column_for_preprocessing='title_text'):
 
     # Change the column names to be more descriptive. And drop the original columns.
     # This is useful when we want to use the same code for other datasets.
-    df['title'] = df['scraped_title']
-    df['text'] = df['scraped_text']
-    df['title_text'] = df['title'] + ' ' + df['text']
-    df = df[['label', 'title', 'text', 'title_text']]
+    df['text'] = df['scraped_title'] + ' ' + df['scraped_text']
+    df = df[['label', 'text']]
 
     # Preprocess the text
-    df['title_text'] = df['title_text'].apply(clean_text)
+    df['text'] = df['text'].apply(clean_text)
 
     return df
 
@@ -146,7 +143,7 @@ def create_datasets(batch_size, device):
     print('[INFO] Validation set size: {}'.format(len(val_df)))
     print('[INFO] Test set size: {}'.format(len(test_df)))
 
-    tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
+    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
 
     train_dr = get_dataloader(tokenizer, train_df, batch_size, device)
     val_dr = get_dataloader(tokenizer, val_df, batch_size, device)
