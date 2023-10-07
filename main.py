@@ -166,7 +166,7 @@ def train(config, train_dr, val_dr, model):
 
         # Early stopping. If the validation loss stops improving, then stop training.
         if early_stopping.early_stop(validation_loss=eval_loss):
-            print("[INFO] Early stopping...", epoch_idx)
+            print("[INFO] Early stopping...")
             break
 
     print(f'[INFO] Training finished. Output directory: {output_dir_path}')
