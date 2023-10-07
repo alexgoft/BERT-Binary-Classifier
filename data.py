@@ -44,13 +44,11 @@ class TextDataset(Dataset):
 
         text = data_row[self.data_col]
         label = data_row[self.label_col]
-
         encoding = self.tokenizer.encode_plus(
             text,
             add_special_tokens=True,
             max_length=self.max_token_len,
-            return_token_type_ids=False,
-            padding="max_length",
+            pad_to_max_length=True,
             truncation=True,
             return_attention_mask=True,
             return_tensors='pt',
@@ -80,10 +78,14 @@ def clean_text(text):
             - Remove punctuation
             - Remove stopwords
     """
-    text = text.replace('\n', ' ')
-    text = re.sub(r'\d+', '', text)
-    text = text.translate(str.maketrans('', '', string.punctuation))
-    text = ' '.join([word for word in text.split() if word not in CACHED_STOP_WORDS])
+    # Preprocess the text might not be necessary for BERT.
+    # https://stackoverflow.com/questions/70649831/does-bert-model-need-text
+    # https://datascience.stackexchange.com/questions/113359/why-there-is-no-preprocessing-step-for-training-bert
+
+    # text = text.replace('\n', ' ')
+    # text = re.sub(r'\d+', '', text)
+    # text = text.translate(str.maketrans('', '', string.punctuation))
+    # text = ' '.join([word for word in text.split() if word not in CACHED_STOP_WORDS])
     return text
 
 
@@ -94,6 +96,10 @@ def preprocess_dataframe(df):
         - Change the column names to be more descriptive. And drop the original columns.
         - Preprocess the text (lowercase, remove punctuation, remove stopwords).
     """
+    # Binaries the content type column and plot the histogram again.
+    df[CONTENT_CLASS_COLUMN] = df[CONTENT_CLASS_COLUMN].apply(
+        lambda x: POSITIVE_STR if x == POSITIVE_STR else NEGATIVE_STR)
+
     # label mapping to 0 and 1 for non-news and news respectively.
     df['label'] = df[CONTENT_CLASS_COLUMN].map(LABEL_MAP)
 
@@ -111,10 +117,6 @@ def preprocess_dataframe(df):
 def create_datasets(config, device):
     # Read the data and plot the histogram of the content type column.
     df = pd.read_csv(config.data.data_path)
-
-    # Binaries the content type column and plot the histogram again.
-    df[CONTENT_CLASS_COLUMN] = df[CONTENT_CLASS_COLUMN].apply(
-        lambda x: POSITIVE_STR if x == POSITIVE_STR else NEGATIVE_STR)
 
     # label mapping to 0 and 1 for non-news and news respectively.
     df = preprocess_dataframe(df)

@@ -20,28 +20,29 @@ CFG = {
         'data_path': 'assignment_data_en.csv',
         'train_size': 0.6,
         'val_size': 0.5,  # Percentage of the data left for validation (rest is for test).
-        'max_seq_length': 256,
+        'max_seq_length': 512,
         'plot_histograms': True
     }, 'train': {
         'num_epochs': 10,
         'batch_size': 16,
         'lr': 2e-5,
+        'weight_decay': 0.01,
+        'eps': 1e-8,
         'dropout': 0.3,
         'early_stopping': {
             'patience': 2,
-            'min_delta': 0.1
+            'min_delta': 0
         }},
     'test': {
         'model_path': 'outputs/20231007-193004/model_0.43864.pt',
         'threshold': 0.5},
     'model': {
         'model_name': 'google/bert_uncased_L-4_H-256_A-4',
-        # If n_classes is 1, integer encoding is used.
-        # If n_classes > 1, one-hot encoding is used.
-        'n_classes': 1,
+        # 'model_name': 'bert-base-uncased',
+        'n_classes': 1,  # If n_classes > 1, one-hot encoding is used. else integer encoding is used.
         'linear_layers_num': 2,  # Number of linear layers after the BERT model.
         'freeze_bert': False,  # If True, only train the classifier layers.
-        'max_seq_length': 256,  # Max sequence length for the BERT model.
+        'max_seq_length': 512,  # Max sequence length for the BERT model.
         'uncased': True,  # Bert uncased or cased (meaning case-sensitive)
     }
 }
@@ -107,7 +108,6 @@ def evaluate_end_epoch(model, val_dr):
 
 
 def train(config, train_dr, val_dr, model):
-
     # Create output directory for the model and save the config file.
     output_dir_path = os.path.join(config.general.output_dir,
                                    time.strftime("%Y%m%d-%H%M%S"))
@@ -120,7 +120,11 @@ def train(config, train_dr, val_dr, model):
                                   min_delta=config.train.early_stopping.min_delta)
 
     # AdamW is an Adam variant with weight decay regularization.
-    optimizer = AdamW(model.parameters(), lr=config.train.lr, correct_bias=False)
+    optimizer = AdamW(model.parameters(),
+                      lr=config.train.lr,
+                      weight_decay=config.train.weight_decay,
+                      eps=config.train.eps,
+                      correct_bias=False)
     scheduler = None
 
     # optimizer = AdamW(model.parameters(), lr=LR, correct_bias=False)
@@ -170,7 +174,6 @@ def train(config, train_dr, val_dr, model):
 
 
 def main(config, mode='train'):
-
     # Set device to GPU if available.
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"[INFO] Using device: {device}")
