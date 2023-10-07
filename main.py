@@ -32,9 +32,12 @@ CFG = {
     'test': {'model_path': 'outputs/20201220-155809/model_0.0001.pt'},
     'model': {
         'model_name': 'google/bert_uncased_L-4_H-256_A-4',
+        # If n_classes is 1, integer encoding is used.
+        # If n_classes > 1, one-hot encoding is used.
         'n_classes': 1,
+        'linear_layers_num': 2,  # Number of linear layers after the BERT model.
         'freeze_bert': False,   # If True, only train the classifier layers.
-        'max_seq_length': 256,
+        'max_seq_length': 256, # Max sequence length for the BERT model.
         'uncased': True,  # Bert uncased or cased (meaning case-sensitive)
     }
 }
@@ -138,13 +141,14 @@ def train(config, train_dr, val_dr, model, output_dir_path, device):
             valid_loss_list.append(eval_loss)
 
             if eval_loss < best_eval_loss:
+                print(f'[INFO] Improved loss {best_eval_loss} ==> {eval_loss}. '
+                      f'Saving model to {model_path}')
+
                 best_eval_loss = eval_loss
 
                 model_path = os.path.join(output_dir_path, f'model_{eval_loss}.pt')
                 torch.save(model.state_dict(), model_path)
 
-                print(f'[INFO] Improved loss {best_eval_loss} ==> {eval_loss}. '
-                      f'Saving model to {model_path}')
         print(f'[INFO] Epoch: {epoch_idx + 1}/{config.train.num_epochs}')
         print(f'[INFO]\t\tTRAIN LOSS: {train_loss}')
         print(f'[INFO]\t\tVALIDATION LOSS: {eval_loss}')

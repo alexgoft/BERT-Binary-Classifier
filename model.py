@@ -15,19 +15,33 @@ class BERTNewsClassifier(nn.Module):
     def __init__(self, config, device=torch.device('cpu')):
         super(BERTNewsClassifier, self).__init__()
 
+        self._n_classes = config.model.n_classes
+        self._dropout = nn.Dropout(p=config.train.dropout)
+        self._loss_function = nn.BCELoss()
+
+        self._initialize_bert(config)
+        self._initialize_classification_layer(config)
+
+        self._device = device
+        self.to(device)
+
+    def _initialize_bert(self, config):
         self._bert = BertModel.from_pretrained(config.model.model_name, return_dict=True)
         if config.model.freeze_bert:
             for param in self._bert.parameters():
                 param.requires_grad = False
 
-        # ---------------------------------------------------------------------
-        self._n_classes = config.model.n_classes
-        self._classifier = nn.Linear(self._bert.config.hidden_size, self._n_classes)
-        self._dropout = nn.Dropout(p=config.train.dropout)
-        self._loss_function = nn.BCELoss()
-
-        self._device = device
-        self.to(device)
+    def _initialize_classification_layer(self, config):
+        if config.model.linear_layers_num == 1:
+            self._classifier = nn.Linear(self._bert.config.hidden_size, self._n_classes)
+        elif config.model.linear_layers_num == 2:
+            self._classifier = nn.Sequential(
+                nn.Linear(self._bert.config.hidden_size, 256),
+                nn.ReLU(),
+                nn.Linear(256, self._n_classes)
+            )
+        else:
+            raise ValueError("linear_layers_num must be 1 or 2")
 
     def load_model(self, model_path):
         self.load_state_dict(torch.load(model_path))
