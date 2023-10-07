@@ -20,7 +20,7 @@ MODEL_CFG = Namespace(**
                           'model_name': 'google/bert_uncased_L-4_H-256_A-4',
                           'n_classes': 1,
                           'freeze_bert': False,
-                          'max_seq_length': 512,
+                          'max_seq_length': 256,
                           'uncased': True,  # Bert uncased or cased (meaning case-sensitive)
                       }
                       )
@@ -49,10 +49,6 @@ class EarlyStopper:
             if self.counter >= self.patience:
                 return True
         return False
-
-
-# def test(test_dr, model, output_dir_path, device):
-#     pass
 
 
 def train_epoch(model, optimizer, train_dr, epoch_idx,
@@ -117,7 +113,6 @@ def train(train_dr, val_dr, model, output_dir_path, device):
     train_acc_list = []
     valid_acc_list = []
     for epoch_idx in range(NUM_EPOCHS):
-
         train_loss = train_epoch(model=model,
                                  optimizer=optimizer, scheduler=scheduler,
                                  train_dr=train_dr, epoch_idx=epoch_idx)
@@ -135,15 +130,14 @@ def train(train_dr, val_dr, model, output_dir_path, device):
 
                 print(f'[INFO] Improved loss {best_eval_loss} ==> {eval_loss}. '
                       f'Saving model to {model_path}')
-
-        # Early stopping. If the validation loss stops improving, then stop training.
-        if early_stopping.early_stop(validation_loss=eval_loss):
-            print("[INFO] Early stopping..We are at epoch:", epoch_idx)
-            break
-
         print(f'[INFO] Epoch: {epoch_idx + 1}/{NUM_EPOCHS}')
         print(f'[INFO]\t\tTRAIN LOSS: {train_loss}')
         print(f'[INFO]\t\tVALIDATION LOSS: {eval_loss}')
+
+        # Early stopping. If the validation loss stops improving, then stop training.
+        if early_stopping.early_stop(validation_loss=eval_loss):
+            print("[INFO] Early stopping...", epoch_idx)
+            break
     print(f'[INFO] Training finished. Output directory: {output_dir_path}')
 
     plot_losses(loss_values=train_loss_list, val_losses=valid_loss_list,
@@ -168,7 +162,6 @@ def main():
 
     # Train and test.
     train(train_dr, val_dr, model, output_dir_path, device)
-    # test(test_dr, model, output_dir_path, device)
 
 
 if __name__ == '__main__':
