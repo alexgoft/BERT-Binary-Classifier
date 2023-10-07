@@ -61,10 +61,11 @@ def train_epoch(model, optimizer, train_dr, epoch_idx,
     model.train()
     train_loss = 0.0
     for batch_idx, batch in enumerate(train_dr):
+        optimizer.zero_grad()
+
         loss, _ = model(batch)
         train_loss += loss.item()
 
-        optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         if scheduler is not None:
