@@ -1,3 +1,5 @@
+from argparse import Namespace
+
 import torch
 import os
 import time
@@ -10,8 +12,19 @@ from utils import plot_losses
 
 # Training parameters.
 NUM_EPOCHS = 20
-BATCH_SIZE = 8
+BATCH_SIZE = 16
 LR = 1e-5
+
+# Model parameters.
+MODEL_CFG = Namespace(**
+                      {
+                          'model_name': 'google/bert_uncased_L-4_H-256_A-4',
+                          'n_classes': 1,
+                          'freeze_bert': False,
+                          'max_seq_length': 512,
+                          'uncased': True,  # Bert uncased or cased (meaning case-sensitive)
+                      }
+                      )
 
 
 def test(test_dr, model, output_dir_path, device):
@@ -19,7 +32,6 @@ def test(test_dr, model, output_dir_path, device):
 
 
 def train(train_dr, val_dr, model, output_dir_path, device):
-
     # AdamW is an Adam variant with weight decay regularization.
     optimizer = torch.optim.AdamW(model.parameters(), lr=LR)
     scheduler = None
@@ -96,7 +108,7 @@ def train_epoch(model, optimizer, train_dr, epoch_idx, every_n_batches=25, sched
 def evaluate_end_epoch(model, val_dr):
     """Evaluate the model on the validation set."""
     print('[INFO] Evaluating...')
-    
+
     model.eval()
     val_loss = 0.0
     with torch.no_grad():
@@ -117,8 +129,8 @@ def main():
     os.makedirs(output_dir_path)
 
     # Create model and datasets.
-    model = NewsClassifier(device=device)
-    train_dr, val_dr, test_dr = create_datasets(batch_size=BATCH_SIZE, device=device)
+    model = NewsClassifier(config=MODEL_CFG, device=device)
+    train_dr, val_dr, test_dr = create_datasets(model_config=MODEL_CFG, batch_size=BATCH_SIZE, device=device)
 
     # Train and test.
     train(train_dr, val_dr, model, output_dir_path, device)

@@ -5,20 +5,19 @@ from transformers import BertModel
 
 
 class NewsClassifier(nn.Module):
-    BERT_MODEL_NAME = 'bert-base-uncased' # 'bert-base-cased'
 
-    def __init__(self, n_classes=2, device=torch.device('cpu')):
+    def __init__(self, config, device=torch.device('cpu')):
         super(NewsClassifier, self).__init__()
-        # self._n_classes = n_classes  # TODO Try with 1 class?
-        self._n_classes = 1
+        self._n_classes = config.n_classes
 
         # Bert is a transformer model that is pretrained on a large corpus of text.
         # We will use the BERT model to extract meaningful representations of our text
         # that we will feed to a classifier. We will use the pre-trained weights of the
         # BERT model.
-        self.bert = BertModel.from_pretrained(self.BERT_MODEL_NAME, return_dict=True)
-        # for name, param in self.bert.named_parameters():  # TODO Freeze BERT weights?
-        #     param.requires_grad = False
+        self.bert = BertModel.from_pretrained(config.model_name, return_dict=True)
+        if config.freeze_bert:
+            for param in self.bert.parameters():
+                param.requires_grad = False
 
         # ---------------------------------------------------------------------
         self.classifier = nn.Linear(self.bert.config.hidden_size, self._n_classes)
