@@ -135,10 +135,10 @@ def train(train_dr, val_dr, model, output_dir_path, device):
                 print(f'[INFO] Improved loss {best_eval_loss} ==> {eval_loss}. '
                       f'Saving model to {model_path}')
 
-            # Early stopping. If the validation loss stops improving, then stop training.
-            elif early_stopping.early_stop(validation_loss=eval_loss):
-                print("[INFO] Early stopping..We are at epoch:", epoch_idx)
-                break
+        # Early stopping. If the validation loss stops improving, then stop training.
+        if early_stopping.early_stop(validation_loss=eval_loss):
+            print("[INFO] Early stopping..We are at epoch:", epoch_idx)
+            break
 
         print(f'[INFO] Epoch: {epoch_idx + 1}/{NUM_EPOCHS}')
         print(f'[INFO]\t\tTRAIN LOSS: {train_loss}')
