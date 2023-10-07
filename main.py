@@ -15,7 +15,7 @@ CFG = {
     'general': {
         'seed': 42,
         'output_dir': 'outputs',
-        'mode': 'test'  # 'test' or 'train'
+        'mode': 'train'  # 'test' or 'train'
     }, 'data': {
         'data_path': 'assignment_data_en.csv',
         'train_size': 0.6,
@@ -23,7 +23,7 @@ CFG = {
         'max_seq_length': 256,
         'plot_histograms': True
     }, 'train': {
-        'num_epochs': 2,
+        'num_epochs': 10,
         'batch_size': 16,
         'lr': 2e-5,
         'dropout': 0.3,
@@ -178,6 +178,9 @@ def main(config, mode='train'):
         output_dir_path = os.path.join(config.general.output_dir,
                                        time.strftime("%Y%m%d-%H%M%S"))
         os.makedirs(output_dir_path)
+
+        # save the config file to the output directory.
+        config.save_config(os.path.join(output_dir_path, 'config.yaml'))
 
         train(config, train_dr, val_dr, model, output_dir_path)
 
