@@ -15,9 +15,6 @@ POSITIVE_STR = 'news'
 NEGATIVE_STR = 'non-news'
 LABEL_MAP = {POSITIVE_STR: 1, NEGATIVE_STR: 0}
 
-RANDOM_SEED = 42
-
-
 class TextDataset(Dataset):
 
     def __init__(
@@ -110,7 +107,7 @@ def preprocess_dataframe(df):
     return df
 
 
-def create_datasets(config, device):
+def create_datasets(config, device, plot_histograms=False):
 
     # Read the data and plot the histogram of the content type column.
     df = pd.read_csv(config.data.data_path)
@@ -123,23 +120,20 @@ def create_datasets(config, device):
     df = preprocess_dataframe(df)
 
     # Split the dataframe into training, test, and validation sets
-    train_df = df.sample(frac=config.data.train_size, random_state=RANDOM_SEED)
-    val_df = df.drop(train_df.index).sample(frac=config.data.val_size, random_state=RANDOM_SEED)
+    seed = config.data.random_seed
+    train_df = df.sample(frac=config.data.train_size, random_state=seed)
+    val_df = df.drop(train_df.index).sample(frac=config.data.val_size, random_state=seed)
     test_df = df.drop(train_df.index).drop(val_df.index)
-
-    # plot_column_histogram(train_df, column='label', title='Training set histogram TRAIN')
-    # plot_column_histogram(val_df, column='label', title='Training set histogram VAL')
-    # plot_column_histogram(test_df, column='label', title='Training set histogram TEST')
-
-    print('[INFO] Train set size: {}'.format(len(train_df)))
-    print('[INFO] Validation set size: {}'.format(len(val_df)))
-    print('[INFO] Test set size: {}'.format(len(test_df)))
 
     tokenizer = BertTokenizer.from_pretrained(config.model.model_name,
                                               do_lower_case=config.model.uncased)
-
     train_dr = get_dataloader(tokenizer=tokenizer, df=train_df, config=config, device=device)
     val_dr = get_dataloader(tokenizer=tokenizer, df=val_df, config=config, device=device)
     test_dr = get_dataloader(tokenizer=tokenizer, df=test_df, config=config, device=device)
+
+    if plot_histograms:
+        for df, name in zip([train_df, val_df, test_df], ['train', 'val', 'test']):
+            plot_column_histogram(df, column='label', title=f'Training set histogram {name}')
+            print(f'[INFO] {name} set size: {len(test_df)}')
 
     return train_dr, val_dr, test_dr
