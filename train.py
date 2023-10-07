@@ -92,8 +92,8 @@ def evaluate_end_epoch(model, val_dr):
 
 def train(train_dr, val_dr, model, output_dir_path, device):
     # Initialize the early_stopping object.
-    # If the validation loss does not improve after 1 epoch, stop training.
-    early_stopping = EarlyStopper()
+    # If the validation loss does not improve after 'patience' epoch, stop training.
+    early_stopping = EarlyStopper(patience=2)
 
     # AdamW is an Adam variant with weight decay regularization.
     optimizer = AdamW(model.parameters(), lr=LR)
