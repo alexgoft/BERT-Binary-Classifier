@@ -3,24 +3,14 @@ from collections import Counter
 import matplotlib.pyplot as plt
 
 
-def plot_losses(loss_values, val_losses,
-                train_accuracies, val_accuracies):
+def plot_losses(loss_values, val_losses):
     x0 = list(range(1, len(loss_values) + 1))
 
-    _, axs = plt.subplots(1, 2, figsize=(10, 2))
-
     # Plot loss of train and validation sets.
-    axs[0].plot(x0, loss_values, label="Train loss")
-    axs[0].plot(x0, val_losses, label="Validation loss")
-    axs[0].set_title('Model loss')
-    axs[0].legend(loc="upper right")
-
-    # # Plot accuracy of train and validation sets.
-    # axs[1].plot(x0, train_accuracies, label="Train accuracy")
-    # axs[1].plot(x0, val_accuracies, label="Validation accuracy")
-    # axs[1].set_title('Model accuracy')
-    # axs[1].legend(loc="upper right")
-
+    plt.plot(x0, loss_values, label="Train loss")
+    plt.plot(x0, val_losses, label="Validation loss")
+    plt.title('Model loss')
+    plt.legend(loc="upper right")
     plt.tight_layout()
     plt.show()
 

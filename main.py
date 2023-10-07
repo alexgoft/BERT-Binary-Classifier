@@ -24,7 +24,7 @@ CFG = {
     }, 'train': {
         'num_epochs': 20,
         'batch_size': 16,
-        'lr': 1e-5,
+        'lr': 2e-5,
         'dropout': 0.3,
         'early_stopping': {
             'patience': 2,
@@ -80,7 +80,7 @@ def evaluate_end_epoch(model, val_dr):
     return round(val_loss / len(val_dr), 5)
 
 
-def train(config, train_dr, val_dr, model, output_dir_path, device):
+def train(config, train_dr, val_dr, model, output_dir_path):
     # Initialize the early_stopping object.
     # If the validation loss does not improve after 'patience' epoch, stop training.
     early_stopping = EarlyStopper(patience=config.train.early_stopping.patience,
@@ -104,8 +104,6 @@ def train(config, train_dr, val_dr, model, output_dir_path, device):
 
     train_loss_list = []
     valid_loss_list = []
-    train_acc_list = []
-    valid_acc_list = []
     for epoch_idx in range(config.train.num_epochs):
         train_loss = train_epoch(model=model, train_dr=train_dr,
                                  optimizer=optimizer, scheduler=scheduler,
@@ -117,13 +115,13 @@ def train(config, train_dr, val_dr, model, output_dir_path, device):
             valid_loss_list.append(eval_loss)
 
             if eval_loss < best_eval_loss:
+                model_path = os.path.join(output_dir_path, f'model_{eval_loss}.pt')
+                torch.save(model.state_dict(), model_path)
+
                 print(f'[INFO] Improved loss {best_eval_loss} ==> {eval_loss}. '
                       f'Saving model to {model_path}')
 
                 best_eval_loss = eval_loss
-
-                model_path = os.path.join(output_dir_path, f'model_{eval_loss}.pt')
-                torch.save(model.state_dict(), model_path)
 
         print(f'[INFO] Epoch: {epoch_idx + 1}/{config.train.num_epochs}')
         print(f'[INFO]\t\tTRAIN LOSS: {train_loss}')
@@ -135,8 +133,15 @@ def train(config, train_dr, val_dr, model, output_dir_path, device):
             break
 
     print(f'[INFO] Training finished. Output directory: {output_dir_path}')
-    plot_losses(loss_values=train_loss_list, val_losses=valid_loss_list,
-                train_accuracies=train_acc_list, val_accuracies=valid_acc_list)
+    plot_losses(loss_values=train_loss_list, val_losses=valid_loss_list)
+
+
+def test(config, test_dr, model):
+    model_path = config.test.model_path
+    model.load_model(model_path)
+
+    test_loss = evaluate_end_epoch(model=model, val_dr=test_dr)
+    print(f'[INFO] Test loss: {test_loss}')
 
 
 def main(config, mode='train'):
@@ -154,13 +159,9 @@ def main(config, mode='train'):
 
     # Train and test.
     if mode == 'train':
-        train(config, train_dr, val_dr, model, output_dir_path, device)
-    # else:
-    #     model_path = config.test.model_path
-    #     model.load_model(model_path)
-    #
-    #     test_loss = evaluate_end_epoch(model=model, val_dr=test_dr)
-    #     print(f'[INFO] Test loss: {test_loss}')
+        train(config, train_dr, val_dr, model, output_dir_path)
+    elif mode == 'test':
+        test(config, test_dr, model)
 
 
 if __name__ == '__main__':

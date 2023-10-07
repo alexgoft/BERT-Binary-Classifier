@@ -120,13 +120,11 @@ def create_datasets(config, device, plot_histograms=False):
     df = preprocess_dataframe(df)
 
     # Split the dataframe into training, test, and validation sets
-    seed = config.data.random_seed
-    train_df = df.sample(frac=config.data.train_size, random_state=seed)
-    val_df = df.drop(train_df.index).sample(frac=config.data.val_size, random_state=seed)
+    train_df = df.sample(frac=config.data.train_size, random_state=config.general.seed)
+    val_df = df.drop(train_df.index).sample(frac=config.data.val_size, random_state=config.general.seed)
     test_df = df.drop(train_df.index).drop(val_df.index)
 
-    tokenizer = BertTokenizer.from_pretrained(config.model.model_name,
-                                              do_lower_case=config.model.uncased)
+    tokenizer = BertTokenizer.from_pretrained(config.model.model_name, do_lower_case=config.model.uncased)
     train_dr = get_dataloader(tokenizer=tokenizer, df=train_df, config=config, device=device)
     val_dr = get_dataloader(tokenizer=tokenizer, df=val_df, config=config, device=device)
     test_dr = get_dataloader(tokenizer=tokenizer, df=test_df, config=config, device=device)

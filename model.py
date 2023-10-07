@@ -11,7 +11,6 @@ class BERTNewsClassifier(nn.Module):
         that we will feed to a classifier. We will use the pre-trained weights of the
         BERT model.
     """
-
     def __init__(self, config, device=torch.device('cpu')):
         super(BERTNewsClassifier, self).__init__()
 
