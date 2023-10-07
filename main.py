@@ -32,7 +32,7 @@ CFG = {
             'min_delta': 0.1
         }},
     'test': {
-        'model_path': 'outputs/20231007-183121/model_0.46657.pt',
+        'model_path': 'outputs/20231007-193004/model_0.43864.pt',
         'threshold': 0.5},
     'model': {
         'model_name': 'google/bert_uncased_L-4_H-256_A-4',
@@ -106,7 +106,14 @@ def evaluate_end_epoch(model, val_dr):
     return round(val_loss / len(val_dr), 5), outputs
 
 
-def train(config, train_dr, val_dr, model, output_dir_path):
+def train(config, train_dr, val_dr, model):
+
+    # Create output directory for the model and save the config file.
+    output_dir_path = os.path.join(config.general.output_dir,
+                                   time.strftime("%Y%m%d-%H%M%S"))
+    os.makedirs(output_dir_path)
+    config.save_config(os.path.join(output_dir_path, 'config.yaml'))
+
     # Initialize the early_stopping object.
     # If the validation loss does not improve after 'patience' epoch, stop training.
     early_stopping = EarlyStopper(patience=config.train.early_stopping.patience,
@@ -174,15 +181,7 @@ def main(config, mode='train'):
 
     # Train and test.
     if mode == 'train':
-        # Create output directory for the model.
-        output_dir_path = os.path.join(config.general.output_dir,
-                                       time.strftime("%Y%m%d-%H%M%S"))
-        os.makedirs(output_dir_path)
-
-        # save the config file to the output directory.
-        config.save_config(os.path.join(output_dir_path, 'config.yaml'))
-
-        train(config, train_dr, val_dr, model, output_dir_path)
+        train(config, train_dr, val_dr, model)
 
     elif mode == 'test':
         test(config, test_dr, model)
