@@ -1,5 +1,0 @@
-conda install -c "nvidia/label/cuda-12.0.0" cuda
-conda install pytorch pytorch-cuda=11.8 -c pytorch -c nvidia
-conda install transformers
-conda install pandas
-conda install matplotlib
