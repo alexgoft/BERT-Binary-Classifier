@@ -42,7 +42,6 @@ CFG = {
         'n_classes': 1,  # If n_classes > 1, one-hot encoding is used. else integer encoding is used.
         'linear_layers_num': 2,  # Number of linear layers after the BERT model.
         'freeze_bert': False,  # If True, only train the classifier layers.
-        'max_seq_length': 512,  # Max sequence length for the BERT model.
         'uncased': True,  # Bert uncased or cased (meaning case-sensitive)
     }
 }

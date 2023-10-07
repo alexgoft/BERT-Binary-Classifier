@@ -4,7 +4,7 @@ import torch
 import pandas as pd
 
 from nltk.corpus import stopwords
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 from transformers import BertTokenizer
 from utils import plot_column_histogram
 
@@ -62,10 +62,11 @@ class TextDataset(Dataset):
         )
 
 
-def get_dataloader(tokenizer, df, config, device=torch.device('cpu')):
+def get_dataloader(tokenizer, df, config, device=torch.device('cpu'), sampler=None):
     """Create dataloader for the given dataframe."""
     ds = TextDataset(df, tokenizer, max_token_len=config.data.max_seq_length, device=device)
-    dr = DataLoader(ds, batch_size=config.train.batch_size, shuffle=True)
+    dr = DataLoader(ds, batch_size=config.train.batch_size,
+                    shuffle=True if sampler is None else False, sampler=sampler)
     return dr
 
 
@@ -115,6 +116,7 @@ def preprocess_dataframe(df):
 
 
 def create_datasets(config, device):
+
     # Read the data and plot the histogram of the content type column.
     df = pd.read_csv(config.data.data_path)
 
@@ -123,11 +125,26 @@ def create_datasets(config, device):
 
     # Split the dataframe into training, test, and validation sets
     train_df = df.sample(frac=config.data.train_size, random_state=config.general.seed)
+    # ----------------------------- #
+    import numpy as np
+
+    # Compute class distribution
+    target = train_df['label'].to_numpy()
+    class_count = np.bincount(target)
+    class_weights = 1. / torch.tensor(class_count, dtype=torch.float)
+
+    # Assign weights to each sample in the dataset
+    sample_weights = class_weights[target]
+
+    # Create a sampler with these weights
+    sampler = WeightedRandomSampler(weights=sample_weights, num_samples=len(sample_weights))
+    # ----------------------------- #
+
     val_df = df.drop(train_df.index).sample(frac=config.data.val_size, random_state=config.general.seed)
     test_df = df.drop(train_df.index).drop(val_df.index)
 
     tokenizer = BertTokenizer.from_pretrained(config.model.model_name, do_lower_case=config.model.uncased)
-    train_dr = get_dataloader(tokenizer=tokenizer, df=train_df, config=config, device=device)
+    train_dr = get_dataloader(tokenizer=tokenizer, df=train_df, config=config, device=device, sampler=sampler)
     val_dr = get_dataloader(tokenizer=tokenizer, df=val_df, config=config, device=device)
     test_dr = get_dataloader(tokenizer=tokenizer, df=test_df, config=config, device=device)
 
