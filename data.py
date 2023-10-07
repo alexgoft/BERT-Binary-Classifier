@@ -10,14 +10,11 @@ from utils import plot_column_histogram
 from nltk.corpus import stopwords
 cached_stop_words = stopwords.words("english")
 
-DATA_PATH = 'assignment_data_en.csv'
 CONTENT_CLASS_COLUMN = 'content_type'
 POSITIVE_STR = 'news'
 NEGATIVE_STR = 'non-news'
 LABEL_MAP = {POSITIVE_STR: 1, NEGATIVE_STR: 0}
 
-TRAIN_SET_SIZE = 0.6
-VALIDATION_SET_SIZE = 0.5
 RANDOM_SEED = 42
 
 
@@ -69,10 +66,10 @@ class TextDataset(Dataset):
         )
 
 
-def get_dataloader(tokenizer, df, max_token_len=128, batch_size=16, device=torch.device('cpu')):
+def get_dataloader(tokenizer, df, config, device=torch.device('cpu')):
     """Create dataloader for the given dataframe."""
-    ds = TextDataset(df, tokenizer, max_token_len=max_token_len, device=device)
-    dr = DataLoader(ds, batch_size=batch_size, shuffle=True)
+    ds = TextDataset(df, tokenizer, max_token_len=config.data.max_seq_length, device=device)
+    dr = DataLoader(ds, batch_size=config.train.batch_size, shuffle=True)
     return dr
 
 
@@ -92,7 +89,7 @@ def clean_text(text):
     return text
 
 
-def preprocess_dataframe(df, column_for_preprocessing='text'):
+def preprocess_dataframe(df):
     """
     Preprocess the dataframe. This includes:
         - label mapping to 0 and 1 for non-news and news respectively.
@@ -113,9 +110,10 @@ def preprocess_dataframe(df, column_for_preprocessing='text'):
     return df
 
 
-def create_datasets(model_config, batch_size, device):
+def create_datasets(config, device):
+
     # Read the data and plot the histogram of the content type column.
-    df = pd.read_csv(DATA_PATH)
+    df = pd.read_csv(config.data.data_path)
 
     # Binaries the content type column and plot the histogram again.
     df[CONTENT_CLASS_COLUMN] = df[CONTENT_CLASS_COLUMN].apply(
@@ -125,11 +123,10 @@ def create_datasets(model_config, batch_size, device):
     df = preprocess_dataframe(df)
 
     # Split the dataframe into training, test, and validation sets
-    train_df = df.sample(frac=TRAIN_SET_SIZE, random_state=RANDOM_SEED)
-    val_df = df.drop(train_df.index).sample(frac=VALIDATION_SET_SIZE, random_state=RANDOM_SEED)
+    train_df = df.sample(frac=config.data.train_size, random_state=RANDOM_SEED)
+    val_df = df.drop(train_df.index).sample(frac=config.data.val_size, random_state=RANDOM_SEED)
     test_df = df.drop(train_df.index).drop(val_df.index)
 
-    # plot_column_histogram(df, column=CONTENT_CLASS_COLUMN, title='Content type histogram')
     # plot_column_histogram(train_df, column='label', title='Training set histogram TRAIN')
     # plot_column_histogram(val_df, column='label', title='Training set histogram VAL')
     # plot_column_histogram(test_df, column='label', title='Training set histogram TEST')
@@ -138,17 +135,11 @@ def create_datasets(model_config, batch_size, device):
     print('[INFO] Validation set size: {}'.format(len(val_df)))
     print('[INFO] Test set size: {}'.format(len(test_df)))
 
-    tokenizer = BertTokenizer.from_pretrained(model_config.model_name,
-                                              do_lower_case=model_config.uncased)
+    tokenizer = BertTokenizer.from_pretrained(config.model.model_name,
+                                              do_lower_case=config.model.uncased)
 
-    train_dr = get_dataloader(tokenizer=tokenizer, df=train_df,
-                              max_token_len=model_config.max_seq_length,
-                              batch_size=batch_size, device=device)
-    val_dr = get_dataloader(tokenizer=tokenizer, df=val_df,
-                            max_token_len=model_config.max_seq_length,
-                            batch_size=batch_size, device=device)
-    test_dr = get_dataloader(tokenizer=tokenizer, df=test_df,
-                             max_token_len=model_config.max_seq_length,
-                             batch_size=batch_size, device=device)
+    train_dr = get_dataloader(tokenizer=tokenizer, df=train_df, config=config, device=device)
+    val_dr = get_dataloader(tokenizer=tokenizer, df=val_df, config=config, device=device)
+    test_dr = get_dataloader(tokenizer=tokenizer, df=test_df, config=config, device=device)
 
     return train_dr, val_dr, test_dr

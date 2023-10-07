@@ -2,28 +2,42 @@ import torch
 import os
 import time
 
+from config_file import ConfigFile
 from data import create_datasets
-from model import NewsClassifier
+from model import BERTNewsClassifier
 from utils import plot_losses
-from argparse import Namespace
 
 from transformers import AdamW, get_linear_schedule_with_warmup
 
-# Training parameters.
-NUM_EPOCHS = 20
-BATCH_SIZE = 16
-LR = 1e-5
-
 # Model parameters.
-MODEL_CFG = Namespace(**
-                      {
-                          'model_name': 'google/bert_uncased_L-4_H-256_A-4',
-                          'n_classes': 1,
-                          'freeze_bert': False,
-                          'max_seq_length': 256,
-                          'uncased': True,  # Bert uncased or cased (meaning case-sensitive)
-                      }
-                      )
+CFG = {
+    'general': {
+        'seed': 42,
+        'output_dir': 'outputs',
+        'mode': 'train'  # 'test' or 'train'
+    }, 'data': {
+        'data_path': 'assignment_data_en.csv',
+        'train_size': 0.8,
+        'val_size': 0.5,  # Percentage of the data left for validation (rest is for test).
+        'max_seq_length': 256
+    }, 'train': {
+        'num_epochs': 20,
+        'batch_size': 16,
+        'lr': 1e-5,
+        'dropout': 0.3,
+        'early_stopping': {
+            'patience': 2,
+            'min_delta': 0
+        }},
+    'test': {'model_path': 'outputs/20201220-155809/model_0.0001.pt'},
+    'model': {
+        'model_name': 'google/bert_uncased_L-4_H-256_A-4',
+        'n_classes': 1,
+        'freeze_bert': False,   # If True, only train the classifier layers.
+        'max_seq_length': 256,
+        'uncased': True,  # Bert uncased or cased (meaning case-sensitive)
+    }
+}
 
 
 class EarlyStopper:
@@ -51,7 +65,7 @@ class EarlyStopper:
         return False
 
 
-def train_epoch(model, optimizer, train_dr, epoch_idx,
+def train_epoch(model, optimizer, train_dr, epoch_idx, epochs_num,
                 every_n_batches=25, scheduler=None):
     """Train the model for one epoch."""
     model.train()
@@ -68,7 +82,7 @@ def train_epoch(model, optimizer, train_dr, epoch_idx,
             scheduler.step()
 
         print(f'[INFO] '
-              f'Epoch: {epoch_idx + 1}/{NUM_EPOCHS} '
+              f'Epoch: {epoch_idx + 1}/{epochs_num} '
               f'Batch: {batch_idx + 1}/{len(train_dr)}')
         if (batch_idx + 1) % every_n_batches == 0:
             print(f'[INFO]\t\tTrain loss so far: {round(train_loss / (batch_idx + 1), 5)}')
@@ -87,13 +101,14 @@ def evaluate_end_epoch(model, val_dr):
     return round(val_loss / len(val_dr), 5)
 
 
-def train(train_dr, val_dr, model, output_dir_path, device):
+def train(config, train_dr, val_dr, model, output_dir_path, device):
     # Initialize the early_stopping object.
     # If the validation loss does not improve after 'patience' epoch, stop training.
-    early_stopping = EarlyStopper(patience=2)
+    early_stopping = EarlyStopper(patience=config.train.early_stopping.patience,
+                                  min_delta=config.train.early_stopping.min_delta)
 
     # AdamW is an Adam variant with weight decay regularization.
-    optimizer = AdamW(model.parameters(), lr=LR)
+    optimizer = AdamW(model.parameters(), lr=config.train.lr, correct_bias=False)
     scheduler = None
 
     # optimizer = AdamW(model.parameters(), lr=LR, correct_bias=False)
@@ -112,10 +127,10 @@ def train(train_dr, val_dr, model, output_dir_path, device):
     valid_loss_list = []
     train_acc_list = []
     valid_acc_list = []
-    for epoch_idx in range(NUM_EPOCHS):
-        train_loss = train_epoch(model=model,
+    for epoch_idx in range(config.train.num_epochs):
+        train_loss = train_epoch(model=model, train_dr=train_dr,
                                  optimizer=optimizer, scheduler=scheduler,
-                                 train_dr=train_dr, epoch_idx=epoch_idx)
+                                 epoch_idx=epoch_idx, epochs_num=config.train.num_epochs)
         train_loss_list.append(train_loss)
 
         with torch.no_grad():
@@ -130,7 +145,7 @@ def train(train_dr, val_dr, model, output_dir_path, device):
 
                 print(f'[INFO] Improved loss {best_eval_loss} ==> {eval_loss}. '
                       f'Saving model to {model_path}')
-        print(f'[INFO] Epoch: {epoch_idx + 1}/{NUM_EPOCHS}')
+        print(f'[INFO] Epoch: {epoch_idx + 1}/{config.train.num_epochs}')
         print(f'[INFO]\t\tTRAIN LOSS: {train_loss}')
         print(f'[INFO]\t\tVALIDATION LOSS: {eval_loss}')
 
@@ -144,24 +159,30 @@ def train(train_dr, val_dr, model, output_dir_path, device):
                 train_accuracies=train_acc_list, val_accuracies=valid_acc_list)
 
 
-def main():
+def main(config, mode='train'):
     # Set device to GPU if available.
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"[INFO] Using device: {device}")
 
     # Create output directory.
-    output_dir_path = os.path.join('outputs', time.strftime("%Y%m%d-%H%M%S"))
+    output_dir_path = os.path.join(config.general.output_dir, time.strftime("%Y%m%d-%H%M%S"))
     os.makedirs(output_dir_path)
 
     # Create model and datasets.
-    model = NewsClassifier(config=MODEL_CFG, device=device)
-    train_dr, val_dr, test_dr = create_datasets(model_config=MODEL_CFG,
-                                                batch_size=BATCH_SIZE,
-                                                device=device)
+    model = BERTNewsClassifier(config=config, device=device)
+    train_dr, val_dr, test_dr = create_datasets(config=config, device=device)
 
     # Train and test.
-    train(train_dr, val_dr, model, output_dir_path, device)
+    if mode == 'train':
+        train(config, train_dr, val_dr, model, output_dir_path, device)
+    # else:
+    #     model_path = config.test.model_path
+    #     model.load_model(model_path)
+    #
+    #     test_loss = evaluate_end_epoch(model=model, val_dr=test_dr)
+    #     print(f'[INFO] Test loss: {test_loss}')
 
 
 if __name__ == '__main__':
-    main()
+    config_ = ConfigFile.load(CFG)
+    main(config_, mode=config_.general.mode)
