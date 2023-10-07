@@ -1,6 +1,7 @@
 from collections import Counter
 
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 def plot_losses(loss_values, val_losses):
@@ -29,4 +30,15 @@ def plot_column_histogram(df, column, title):
     plt.xticks(rotation=20)
     plt.xlabel('Text type')
     plt.ylabel('Number of texts')
+    plt.show()
+
+
+def plot_confusion_matrix(cm, y_true, y_pred):
+    ax = plt.subplot()
+    sns.heatmap(cm, annot=True, ax=ax, cmap='Blues', fmt="d")
+    ax.set_title('Confusion Matrix')
+    ax.set_xlabel('Predicted Labels')
+    ax.set_ylabel('True Labels')
+    ax.xaxis.set_ticklabels(['Not-News', 'News'])
+    ax.yaxis.set_ticklabels(['Not-News', 'News'])
     plt.show()

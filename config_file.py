@@ -49,3 +49,8 @@ class ConfigFile:
         config = ConfigFile({})
         config._create_attributes(data)
         return config
+
+    def __repr__(self):
+        return yaml.dump(self.as_dict(),
+                         allow_unicode=True,
+                         default_flow_style=False)

@@ -1,28 +1,29 @@
-import torch
 import os
 import time
+import torch
 
+from sklearn.metrics import classification_report, confusion_matrix
+from transformers import AdamW
 from config_file import ConfigFile
 from data import create_datasets
 from early_stopper import EarlyStopper
 from model import BERTNewsClassifier
-from utils import plot_losses
-
-from transformers import AdamW, get_linear_schedule_with_warmup
+from utils import plot_losses, plot_confusion_matrix
 
 # Model parameters.
 CFG = {
     'general': {
         'seed': 42,
         'output_dir': 'outputs',
-        'mode': 'train'  # 'test' or 'train'
+        'mode': 'test'  # 'test' or 'train'
     }, 'data': {
         'data_path': 'assignment_data_en.csv',
-        'train_size': 0.8,
+        'train_size': 0.6,
         'val_size': 0.5,  # Percentage of the data left for validation (rest is for test).
-        'max_seq_length': 256
+        'max_seq_length': 256,
+        'plot_histograms': True
     }, 'train': {
-        'num_epochs': 20,
+        'num_epochs': 2,
         'batch_size': 16,
         'lr': 2e-5,
         'dropout': 0.3,
@@ -30,7 +31,9 @@ CFG = {
             'patience': 2,
             'min_delta': 0.1
         }},
-    'test': {'model_path': 'outputs/20201220-155809/model_0.0001.pt'},
+    'test': {
+        'model_path': 'outputs/20231007-183121/model_0.46657.pt',
+        'threshold': 0.5},
     'model': {
         'model_name': 'google/bert_uncased_L-4_H-256_A-4',
         # If n_classes is 1, integer encoding is used.
@@ -42,6 +45,25 @@ CFG = {
         'uncased': True,  # Bert uncased or cased (meaning case-sensitive)
     }
 }
+
+
+def test(config, test_dr, model):
+    model.load_model(model_path=config.test.model_path)
+
+    # Evaluate the model on the test set.
+    test_loss, outputs = evaluate_end_epoch(model=model, val_dr=test_dr)
+    print(f'[INFO] Test loss: {test_loss}')
+
+    # Calculate classification metrics.
+    y_pred = [1 if output > config.test.threshold else 0 for output in outputs]
+    y_true = [data['label'] for _, data in test_dr.dataset.data.iterrows()]
+
+    print('[INFO] Classification Report:')
+    print(classification_report(y_true, y_pred, digits=4))
+
+    print('[INFO] Plotting confusion matrix...')
+    cm = confusion_matrix(y_true, y_pred)
+    plot_confusion_matrix(cm=cm, y_true=y_true, y_pred=y_pred)
 
 
 def train_epoch(model, optimizer, train_dr, epoch_idx, epochs_num,
@@ -73,11 +95,15 @@ def evaluate_end_epoch(model, val_dr):
     """Evaluate the model on the validation set."""
     print('[INFO] Evaluating...')
     model.eval()
+    outputs = []
     val_loss = 0.0
     for batch_idx, batch in enumerate(val_dr):
-        loss, _ = model(batch)
+        loss, batch_out = model(batch)
         val_loss += loss.item()
-    return round(val_loss / len(val_dr), 5)
+
+        batch_out = batch_out.detach().cpu().numpy().squeeze()
+        outputs.extend(batch_out)
+    return round(val_loss / len(val_dr), 5), outputs
 
 
 def train(config, train_dr, val_dr, model, output_dir_path):
@@ -111,7 +137,7 @@ def train(config, train_dr, val_dr, model, output_dir_path):
         train_loss_list.append(train_loss)
 
         with torch.no_grad():
-            eval_loss = evaluate_end_epoch(model=model, val_dr=val_dr)
+            eval_loss, _ = evaluate_end_epoch(model=model, val_dr=val_dr)
             valid_loss_list.append(eval_loss)
 
             if eval_loss < best_eval_loss:
@@ -136,22 +162,11 @@ def train(config, train_dr, val_dr, model, output_dir_path):
     plot_losses(loss_values=train_loss_list, val_losses=valid_loss_list)
 
 
-def test(config, test_dr, model):
-    model_path = config.test.model_path
-    model.load_model(model_path)
-
-    test_loss = evaluate_end_epoch(model=model, val_dr=test_dr)
-    print(f'[INFO] Test loss: {test_loss}')
-
-
 def main(config, mode='train'):
+
     # Set device to GPU if available.
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"[INFO] Using device: {device}")
-
-    # Create output directory.
-    output_dir_path = os.path.join(config.general.output_dir, time.strftime("%Y%m%d-%H%M%S"))
-    os.makedirs(output_dir_path)
 
     # Create model and datasets.
     model = BERTNewsClassifier(config=config, device=device)
@@ -159,11 +174,19 @@ def main(config, mode='train'):
 
     # Train and test.
     if mode == 'train':
+        # Create output directory for the model.
+        output_dir_path = os.path.join(config.general.output_dir,
+                                       time.strftime("%Y%m%d-%H%M%S"))
+        os.makedirs(output_dir_path)
+
         train(config, train_dr, val_dr, model, output_dir_path)
+
     elif mode == 'test':
         test(config, test_dr, model)
 
 
 if __name__ == '__main__':
     config_ = ConfigFile.load(CFG)
+    print(config_)
+
     main(config_, mode=config_.general.mode)

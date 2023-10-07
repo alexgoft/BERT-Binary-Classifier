@@ -1,19 +1,20 @@
-import torch
-
-import string
 import re
+import string
+import torch
 import pandas as pd
 
+from nltk.corpus import stopwords
 from torch.utils.data import Dataset, DataLoader
 from transformers import BertTokenizer
 from utils import plot_column_histogram
-from nltk.corpus import stopwords
-cached_stop_words = stopwords.words("english")
+
+CACHED_STOP_WORDS = stopwords.words("english")
 
 CONTENT_CLASS_COLUMN = 'content_type'
 POSITIVE_STR = 'news'
 NEGATIVE_STR = 'non-news'
 LABEL_MAP = {POSITIVE_STR: 1, NEGATIVE_STR: 0}
+
 
 class TextDataset(Dataset):
 
@@ -82,7 +83,7 @@ def clean_text(text):
     text = text.replace('\n', ' ')
     text = re.sub(r'\d+', '', text)
     text = text.translate(str.maketrans('', '', string.punctuation))
-    text = ' '.join([word for word in text.split() if word not in cached_stop_words])
+    text = ' '.join([word for word in text.split() if word not in CACHED_STOP_WORDS])
     return text
 
 
@@ -107,8 +108,7 @@ def preprocess_dataframe(df):
     return df
 
 
-def create_datasets(config, device, plot_histograms=False):
-
+def create_datasets(config, device):
     # Read the data and plot the histogram of the content type column.
     df = pd.read_csv(config.data.data_path)
 
@@ -129,7 +129,7 @@ def create_datasets(config, device, plot_histograms=False):
     val_dr = get_dataloader(tokenizer=tokenizer, df=val_df, config=config, device=device)
     test_dr = get_dataloader(tokenizer=tokenizer, df=test_df, config=config, device=device)
 
-    if plot_histograms:
+    if config.data.plot_histograms:
         for df, name in zip([train_df, val_df, test_df], ['train', 'val', 'test']):
             plot_column_histogram(df, column='label', title=f'Training set histogram {name}')
             print(f'[INFO] {name} set size: {len(test_df)}')
