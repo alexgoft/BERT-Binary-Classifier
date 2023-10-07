@@ -4,9 +4,8 @@ import matplotlib.pyplot as plt
 
 
 def plot_losses(loss_values, val_losses,
-                train_accuracies, val_accuracies,
-                n_epochs):
-    x0 = list(range(1, n_epochs + 1))
+                train_accuracies, val_accuracies):
+    x0 = list(range(1, len(loss_values) + 1))
 
     _, axs = plt.subplots(1, 2, figsize=(10, 2))
 

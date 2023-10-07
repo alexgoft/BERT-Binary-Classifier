@@ -138,11 +138,10 @@ def train(train_dr, val_dr, model, output_dir_path, device):
         if early_stopping.early_stop(validation_loss=eval_loss):
             print("[INFO] Early stopping...", epoch_idx)
             break
-    print(f'[INFO] Training finished. Output directory: {output_dir_path}')
 
+    print(f'[INFO] Training finished. Output directory: {output_dir_path}')
     plot_losses(loss_values=train_loss_list, val_losses=valid_loss_list,
-                train_accuracies=train_acc_list, val_accuracies=valid_acc_list,
-                n_epochs=NUM_EPOCHS)
+                train_accuracies=train_acc_list, val_accuracies=valid_acc_list)
 
 
 def main():
