@@ -4,6 +4,7 @@ import time
 
 from config_file import ConfigFile
 from data import create_datasets
+from early_stopper import EarlyStopper
 from model import BERTNewsClassifier
 from utils import plot_losses
 
@@ -27,7 +28,7 @@ CFG = {
         'dropout': 0.3,
         'early_stopping': {
             'patience': 2,
-            'min_delta': 0
+            'min_delta': 0.1
         }},
     'test': {'model_path': 'outputs/20201220-155809/model_0.0001.pt'},
     'model': {
@@ -36,36 +37,11 @@ CFG = {
         # If n_classes > 1, one-hot encoding is used.
         'n_classes': 1,
         'linear_layers_num': 2,  # Number of linear layers after the BERT model.
-        'freeze_bert': False,   # If True, only train the classifier layers.
-        'max_seq_length': 256, # Max sequence length for the BERT model.
+        'freeze_bert': False,  # If True, only train the classifier layers.
+        'max_seq_length': 256,  # Max sequence length for the BERT model.
         'uncased': True,  # Bert uncased or cased (meaning case-sensitive)
     }
 }
-
-
-class EarlyStopper:
-    """
-    Early stopping to stop the training if the validation loss stops improving.
-    Arguments:
-        min_delta: float, minimum change in the monitored quantity to qualify as an improvement.
-        patience: int, number of epochs to wait for improvement before stopping.
-    """
-
-    def __init__(self, patience=1, min_delta=0):
-        self.patience = patience
-        self.min_delta = min_delta
-        self.counter = 0
-        self.min_validation_loss = float('inf')
-
-    def early_stop(self, validation_loss):
-        if validation_loss < self.min_validation_loss:
-            self.min_validation_loss = validation_loss
-            self.counter = 0
-        elif validation_loss > (self.min_validation_loss + self.min_delta):
-            self.counter += 1
-            if self.counter >= self.patience:
-                return True
-        return False
 
 
 def train_epoch(model, optimizer, train_dr, epoch_idx, epochs_num,
