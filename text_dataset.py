@@ -32,6 +32,7 @@ class TextDataset(Dataset):
         data_row = self.data.iloc[index]
 
         text = data_row[self.data_col]
+        text = text[-self.max_token_len:]  # Use the last max_token_len tokens.
         label = data_row[self.label_col]
         encoding = self.tokenizer.encode_plus(
             text,
