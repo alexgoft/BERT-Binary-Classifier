@@ -1,3 +1,5 @@
+from functools import partial
+
 import torch
 import pandas as pd
 
@@ -45,6 +47,20 @@ def clean_text(text):
     return text
 
 
+def create_segments(text, segment_length=256, overlap=50):
+    """
+    Splits the input text into overlapping segments of a specified length.
+    """
+    words = text.split()
+    segments = []
+    start = 0
+    while start < len(words):
+        end = start + segment_length
+        segments.append(' '.join(words[start:end]))
+        start += (segment_length - overlap)
+    return segments
+
+
 def preprocess_dataframe(df):
     """
     Preprocess the dataframe. This includes:
@@ -82,6 +98,13 @@ def create_datasets(config, device):
 
     # Split the dataframe into training, test, and validation sets
     train_df = df.sample(frac=config.data.train_size, random_state=config.general.seed)
+
+    # Split the text into segments of seq_length tokens and overlap of 50 tokens.
+    train_df['text'] = train_df['text'].apply(partial(create_segments,
+                                                      segment_length=config.model.max_seq_length,
+                                                      overlap=50))
+    train_df = train_df.explode('text')
+
     val_df = df.drop(train_df.index).sample(frac=config.data.val_size, random_state=config.general.seed)
     test_df = df.drop(train_df.index).drop(val_df.index)
 
