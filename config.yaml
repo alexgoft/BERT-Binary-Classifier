@@ -21,10 +21,10 @@ model:
   # If n_classes > 1, one-hot encoding is used.
   # else integer encoding is used.
   n_classes: 1
-  max_seq_length: 256
+  max_seq_length: 512
 
 train:
-  batch_size: 8
+  batch_size: 4
   dropout: 0.4
   early_stopping:
     min_delta: 0
