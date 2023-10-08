@@ -5,10 +5,10 @@ import torch
 from sklearn.metrics import classification_report, confusion_matrix
 from transformers import AdamW
 from config_file import ConfigFile
-from data_utils.data_loaders import create_datasets
+from data_loaders import create_datasets
 from early_stopper import EarlyStopper
 from model import BERTNewsClassifier
-from utils import plot_losses, plot_confusion_matrix
+from plot_utils import plot_losses, plot_confusion_matrix
 
 # Model parameters.
 CFG = {
@@ -17,7 +17,7 @@ CFG = {
         'output_dir': 'outputs',
         'mode': 'train'  # 'test' or 'train'
     }, 'data': {
-        'data_path': 'assignment_data_en.csv',
+        'data_path': 'data/assignment_data_en.csv',
         'train_size': 0.6,
         'val_size': 0.5,  # Percentage of the data_utils left for validation (rest is for test).
         'max_seq_length': 512,
