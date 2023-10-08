@@ -64,6 +64,9 @@ def preprocess_dataframe(df):
     df['text'] = df['scraped_title'] + ' ' + df['scraped_text']
     df = df[['label', 'text']]
 
+    # Drop duplicates in the text column
+    df = df.drop_duplicates(subset='text', keep='first')
+
     # Preprocess the text
     df['text'] = df['text'].apply(clean_text)
 
