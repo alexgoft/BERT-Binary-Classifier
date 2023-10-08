@@ -14,25 +14,25 @@ data:
 model:
   # Smaller versions: "prajjwal1/bert-tiny", "prajjwal1/bert-mini", "prajjwal1/bert-small"
   # BERT versions: "bert-base-uncased", "bert-base-cased"
-  model_name: "prajjwal1/bert-small"
+  model_name: "bert-base-uncased"
   uncased: true  # Tokenizer parameter. Bert uncased or cased (case-sensitive)
   freeze_bert: false  # If True, only train the classifier layers.
   linear_layers_num: 1  # Number of linear layers after the BERT model.
   # If n_classes > 1, one-hot encoding is used.
   # else integer encoding is used.
   n_classes: 1
-  max_seq_length: 512
+  max_seq_length: 256
 
 train:
-  batch_size: 16
-  dropout: 0.3
+  batch_size: 8
+  dropout: 0.4
   early_stopping:
     min_delta: 0
     patience: 3
   eps: 1.0e-08
-  lr: 1.0e-05
+  lr: 2.0e-05
   num_epochs: 20
-  sampler: "BalancedBatchSampler"  # "WeightedRandomSampler" / "BalancedBatchSampler", None
+  sampler: "WeightedRandomSampler"  # "WeightedRandomSampler" / "BalancedBatchSampler", None
   weight_decay: 0.01
 
 test:
