@@ -96,6 +96,7 @@ def create_datasets(config, device):
     # label mapping to 0 and 1 for non-news and news respectively.
     df = preprocess_dataframe(df)
 
+    # --------------------------------------------------------------------------------------------- #
     # Split the dataframe into training, test, and validation sets
     train_df = df.sample(frac=config.data.train_size, random_state=config.general.seed)
 
@@ -104,6 +105,7 @@ def create_datasets(config, device):
                                                       segment_length=config.model.max_seq_length,
                                                       overlap=50))
     train_df = train_df.explode('text')
+    # --------------------------------------------------------------------------------------------- #
 
     val_df = df.drop(train_df.index).sample(frac=config.data.val_size, random_state=config.general.seed)
     test_df = df.drop(train_df.index).drop(val_df.index)
