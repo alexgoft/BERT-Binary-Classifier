@@ -3,7 +3,7 @@ import time
 import torch
 
 from sklearn.metrics import classification_report, confusion_matrix
-from transformers import AdamW
+from transformers import AdamW, get_linear_schedule_with_warmup
 from config_file import ConfigFile
 from data_loaders import create_datasets
 from early_stopper import EarlyStopper
@@ -90,16 +90,14 @@ def train(config, train_dr, val_dr, model):
                       weight_decay=config.train.weight_decay,
                       eps=config.train.eps,
                       correct_bias=False)
-    scheduler = None
 
-    # optimizer = AdamW(model.parameters(), lr=LR, correct_bias=False)
-    # total_steps = len(train_dr) * NUM_EPOCHS
-    # num_warmup_steps = int(total_steps * 0.1)
-    # scheduler = get_linear_schedule_with_warmup(
-    #     optimizer,
-    #     num_warmup_steps=num_warmup_steps,
-    #     num_training_steps=total_steps
-    # )
+    total_steps = len(train_dr) * config.train.num_epochs
+    num_warmup_steps = int(total_steps * 0.1)
+    scheduler = get_linear_schedule_with_warmup(
+        optimizer,
+        num_warmup_steps=num_warmup_steps,
+        num_training_steps=total_steps
+    )
 
     # training loop
     best_eval_loss = float('inf')

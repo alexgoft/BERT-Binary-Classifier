@@ -14,7 +14,7 @@ data:
 model:
   # Smaller versions: "prajjwal1/bert-tiny", "prajjwal1/bert-mini", "prajjwal1/bert-small"
   # BERT versions: "bert-base-uncased", "bert-base-cased"
-  model_name: "prajjwal1/bert-small"
+  model_name: "bert-base-uncased"
   uncased: true  # Tokenizer parameter. Bert uncased or cased (case-sensitive)
   freeze_bert: false  # If True, only train the classifier layers.
   linear_layers_num: 1  # Number of linear layers after the BERT model.
@@ -24,7 +24,7 @@ model:
   max_seq_length: 256
 
 train:
-  batch_size: 16
+  batch_size: 8
   dropout: 0.4
   early_stopping:
     min_delta: 0
