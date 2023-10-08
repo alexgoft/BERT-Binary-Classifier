@@ -5,7 +5,7 @@ import torch
 from sklearn.metrics import classification_report, confusion_matrix
 from transformers import AdamW
 from config_file import ConfigFile
-from data import create_datasets
+from data_utils.data_loaders import create_datasets
 from early_stopper import EarlyStopper
 from model import BERTNewsClassifier
 from utils import plot_losses, plot_confusion_matrix
@@ -19,16 +19,17 @@ CFG = {
     }, 'data': {
         'data_path': 'assignment_data_en.csv',
         'train_size': 0.6,
-        'val_size': 0.5,  # Percentage of the data left for validation (rest is for test).
+        'val_size': 0.5,  # Percentage of the data_utils left for validation (rest is for test).
         'max_seq_length': 512,
         'plot_histograms': True
     }, 'train': {
-        'num_epochs': 10,
-        'batch_size': 16,
-        'lr': 2e-5,
+        'num_epochs': 20,
+        'batch_size': 4,
+        'lr': 1e-5,
         'weight_decay': 0.01,
         'eps': 1e-8,
         'dropout': 0.3,
+        'sampler': "BalancedBatchSampler",   # "WeightedRandomSampler" / "BalancedBatchSampler", None
         'early_stopping': {
             'patience': 2,
             'min_delta': 0
@@ -37,10 +38,10 @@ CFG = {
         'model_path': 'outputs/20231007-193004/model_0.43864.pt',
         'threshold': 0.5},
     'model': {
-        'model_name': 'google/bert_uncased_L-4_H-256_A-4',
-        # 'model_name': 'bert-base-uncased',
+        # 'model_name': 'google/bert_uncased_L-4_H-256_A-4',
+        'model_name': 'bert-base-uncased',
         'n_classes': 1,  # If n_classes > 1, one-hot encoding is used. else integer encoding is used.
-        'linear_layers_num': 2,  # Number of linear layers after the BERT model.
+        'linear_layers_num': 1,  # Number of linear layers after the BERT model.
         'freeze_bert': False,  # If True, only train the classifier layers.
         'uncased': True,  # Bert uncased or cased (meaning case-sensitive)
     }
@@ -184,7 +185,6 @@ def main(config, mode='train'):
     # Train and test.
     if mode == 'train':
         train(config, train_dr, val_dr, model)
-
     elif mode == 'test':
         test(config, test_dr, model)
 
