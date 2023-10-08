@@ -10,42 +10,7 @@ from early_stopper import EarlyStopper
 from model import BERTNewsClassifier
 from plot_utils import plot_losses, plot_confusion_matrix
 
-# Model parameters.
-CFG = {
-    'general': {
-        'seed': 42,
-        'output_dir': 'outputs',
-        'mode': 'train'  # 'test' or 'train'
-    }, 'data': {
-        'data_path': 'data/assignment_data_en.csv',
-        'train_size': 0.6,
-        'val_size': 0.5,  # Percentage of the data_utils left for validation (rest is for test).
-        'max_seq_length': 512,
-        'plot_histograms': True
-    }, 'train': {
-        'num_epochs': 20,
-        'batch_size': 4,
-        'lr': 1e-5,
-        'weight_decay': 0.01,
-        'eps': 1e-8,
-        'dropout': 0.3,
-        'sampler': "BalancedBatchSampler",   # "WeightedRandomSampler" / "BalancedBatchSampler", None
-        'early_stopping': {
-            'patience': 2,
-            'min_delta': 0
-        }},
-    'test': {
-        'model_path': 'outputs/20231007-193004/model_0.43864.pt',
-        'threshold': 0.5},
-    'model': {
-        # 'model_name': 'google/bert_uncased_L-4_H-256_A-4',
-        'model_name': 'bert-base-uncased',
-        'n_classes': 1,  # If n_classes > 1, one-hot encoding is used. else integer encoding is used.
-        'linear_layers_num': 1,  # Number of linear layers after the BERT model.
-        'freeze_bert': False,  # If True, only train the classifier layers.
-        'uncased': True,  # Bert uncased or cased (meaning case-sensitive)
-    }
-}
+CFG_PATH = 'config.yaml'
 
 
 def test(config, test_dr, model):
@@ -190,7 +155,7 @@ def main(config, mode='train'):
 
 
 if __name__ == '__main__':
-    config_ = ConfigFile.load(CFG)
+    config_ = ConfigFile.load(CFG_PATH)
     print(config_)
 
     main(config_, mode=config_.general.mode)

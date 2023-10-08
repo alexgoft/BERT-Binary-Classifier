@@ -19,7 +19,7 @@ LABEL_MAP = {POSITIVE_STR: 1, NEGATIVE_STR: 0}
 
 def get_dataloader(tokenizer, df, config, device=torch.device('cpu'), sampler=None):
     """Create dataloader for the given dataframe."""
-    ds = TextDataset(df, tokenizer, max_token_len=config.data.max_seq_length, device=device)
+    ds = TextDataset(df, tokenizer, max_token_len=config.model.max_seq_length, device=device)
     dr = DataLoader(ds, batch_size=config.train.batch_size,
                     shuffle=True if sampler is None else False, sampler=sampler)
     return dr

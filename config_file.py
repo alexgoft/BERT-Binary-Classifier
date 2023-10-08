@@ -22,7 +22,7 @@ class ConfigFile:
                 config_dict = yaml.safe_load(f)
         else:
             config_dict = config
-        return ConfigFile(config)
+        return ConfigFile(config_dict)
 
     def _create_attributes(self, data):
         for key, value in data.items():

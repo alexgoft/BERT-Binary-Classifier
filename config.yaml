@@ -1,0 +1,40 @@
+general:
+  mode: "train"  # 'test' or 'train'
+  output_dir: "outputs"
+  seed: 42
+
+data:
+  data_path: "data/assignment_data_en.csv"
+  plot_histograms: true
+  # Percentage of the data_utils left for validation (rest is for test).
+  # If 0.6, 60% of the data_utils is used for training, 20% for validation and 20% for test.
+  train_size: 0.6
+  val_size: 0.5
+
+model:
+  # Smaller versions: "prajjwal1/bert-tiny", "prajjwal1/bert-mini", "prajjwal1/bert-small"
+  # BERT versions: "bert-base-uncased", "bert-base-cased"
+  model_name: "prajjwal1/bert-small"
+  uncased: true  # Tokenizer parameter. Bert uncased or cased (case-sensitive)
+  freeze_bert: false  # If True, only train the classifier layers.
+  linear_layers_num: 1  # Number of linear layers after the BERT model.
+  # If n_classes > 1, one-hot encoding is used.
+  # else integer encoding is used.
+  n_classes: 1
+  max_seq_length: 512
+
+train:
+  batch_size: 16
+  dropout: 0.3
+  early_stopping:
+    min_delta: 0
+    patience: 2
+  eps: 1.0e-08
+  lr: 1.0e-05
+  num_epochs: 20
+  sampler: "BalancedBatchSampler"  # "WeightedRandomSampler" / "BalancedBatchSampler", None
+  weight_decay: 0.01
+
+test:
+  model_path: "outputs/20231007-193004/model_0.43864.pt"
+  threshold: 0.5
