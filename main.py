@@ -91,6 +91,9 @@ def train(config, train_dr, val_dr, model):
                       eps=config.train.eps,
                       correct_bias=False)
 
+    # Create the learning rate scheduler. The learning rate is linearly
+    # increased for the first 10% of the steps and then linearly decreased
+    # for the remaining steps.
     total_steps = len(train_dr) * config.train.num_epochs
     num_warmup_steps = int(total_steps * 0.1)
     scheduler = get_linear_schedule_with_warmup(
