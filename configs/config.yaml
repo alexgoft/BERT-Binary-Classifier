@@ -5,6 +5,10 @@ general:
 
 data:
   data_path: "data/assignment_data_en.csv"
+  data_class: # The second is the positive class.
+    - "not-news"
+    - "news"
+  data_column: "content_type" # Column name of the class.
   plot_histograms: true  # Plot histograms of train, val and test sets.
   # Percentage of the data_utils left for validation (rest is for test).
   # If 0.6, 60% of the data_utils is used for training, 20% for validation and 20% for test.

@@ -47,6 +47,10 @@ general:
 
 data:
   data_path: "data/assignment_data_en.csv"
+  data_class: # The second is the positive class.
+    - "not-news"
+    - "news"
+  data_column: "content_type" # Column name of the class.
   plot_histograms: true  # Plot histograms of train, val and test sets.
   # Percentage of the data_utils left for validation (rest is for test).
   # If 0.6, 60% of the data_utils is used for training, 20% for validation and 20% for test.
@@ -57,6 +61,7 @@ data:
   split_text: null
 #  split_text:
 #    overlap_size: 50
+
 
 model:
   # BERT versions: "bert-base-uncased", "bert-base-cased"
@@ -85,6 +90,7 @@ train:
   # "BalancedBatchSampler" - samples batches with equal number of samples from each class.
   # None - samples randomly from the dataset.
   sampler: null
+
 test:
   model_path: "outputs/20231007-193004/model_0.43864.pt"
   threshold: 0.5  # Threshold for positive class.

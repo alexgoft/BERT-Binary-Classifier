@@ -13,15 +13,10 @@ from train_utils import get_sampler
 
 CACHED_STOP_WORDS = stopwords.words("english")
 
-CONTENT_CLASS_COLUMN = 'content_type'
-POSITIVE_STR = 'news'
-NEGATIVE_STR = 'non-news'
-LABEL_MAP = {POSITIVE_STR: 1, NEGATIVE_STR: 0}
-
 
 def get_dataloader(tokenizer, df, config, device=torch.device('cpu'), sampler=None):
     """Create dataloader for the given dataframe."""
-    ds = TextDataset(df, tokenizer, max_token_len=config.model.max_seq_length, device=device)
+    ds = TextDataset(df, tokenizer=tokenizer, max_token_len=config.model.max_seq_length, device=device)
     dr = DataLoader(ds, batch_size=config.train.batch_size,
                     shuffle=True if sampler is None else False, sampler=sampler)
     return dr
@@ -61,19 +56,23 @@ def create_segments(text, segment_length=256, overlap=50):
     return segments
 
 
-def preprocess_dataframe(df):
+def preprocess_dataframe(df, config):
     """
     Preprocess the dataframe. This includes:
         - label mapping to 0 and 1 for non-news and news respectively.
         - Change the column names to be more descriptive. And drop the original columns.
         - Preprocess the text (lowercase, remove punctuation, remove stopwords).
     """
-    # Binaries the content type column and plot the histogram again.
-    df[CONTENT_CLASS_COLUMN] = df[CONTENT_CLASS_COLUMN].apply(
-        lambda x: POSITIVE_STR if x == POSITIVE_STR else NEGATIVE_STR)
+    data_column = config.data.data_column
+    positive_class = config.data.data_class[1]
+    negative_class = config.data.data_class[0]
+    label_map = {positive_class: 1, negative_class: 0}
+    # Binaries the content type column. i.e 1 for news and 0 for non-news.
+    df[data_column] = df[data_column].apply(
+        lambda x: positive_class if x == positive_class else negative_class)
 
     # label mapping to 0 and 1 for non-news and news respectively.
-    df['label'] = df[CONTENT_CLASS_COLUMN].map(LABEL_MAP)
+    df['label'] = df[data_column].map(label_map)
 
     # Change the column names to be more descriptive. And drop the original columns.
     # This is useful when we want to use the same code for other datasets.
@@ -93,8 +92,8 @@ def create_datasets(config, device):
     # Read the data_utils and plot the histogram of the content type column.
     df = pd.read_csv(config.data.data_path)
 
-    # label mapping to 0 and 1 for non-news and news respectively.
-    df = preprocess_dataframe(df)
+    # label mapping to 0 and 1 for negative and positive respectively.
+    df = preprocess_dataframe(df=df, config=config)
 
     # Split the dataframe into training, test, and validation sets
     train_df = df.sample(frac=config.data.train_size, random_state=config.general.seed)
