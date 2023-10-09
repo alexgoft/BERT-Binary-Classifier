@@ -25,14 +25,14 @@ model:
 
 train:
   batch_size: 4
-  dropout: 0.4
+  dropout: 0.3
   early_stopping:
     min_delta: 0
     patience: 3
   eps: 1.0e-08
   lr: 1.0e-05
-  num_epochs: 5
-  sampler: "WeightedRandomSampler" # "WeightedRandomSampler" / "BalancedBatchSampler", None
+  num_epochs: 7
+  sampler: None # "WeightedRandomSampler" / "BalancedBatchSampler", None
   weight_decay: 0.01
 
 test:
