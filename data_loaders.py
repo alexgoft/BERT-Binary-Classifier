@@ -7,9 +7,9 @@ from nltk.corpus import stopwords
 from torch.utils.data import DataLoader
 from transformers import BertTokenizer
 
-from samplers import get_sampler
 from text_dataset import TextDataset
 from plot_utils import plot_column_histogram
+from train_utils import get_sampler
 
 CACHED_STOP_WORDS = stopwords.words("english")
 

@@ -6,11 +6,11 @@ from sklearn.metrics import classification_report, confusion_matrix
 from transformers import AdamW, get_linear_schedule_with_warmup
 from config_file import ConfigFile
 from data_loaders import create_datasets
-from early_stopper import EarlyStopper
 from model import BERTNewsClassifier
 from plot_utils import plot_losses, plot_confusion_matrix
+from train_utils import EarlyStopper
 
-CFG_PATH = 'config.yaml'
+CFG_PATH = 'configs/config.yaml'
 
 
 def test(config, test_dr, model):
