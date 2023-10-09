@@ -18,7 +18,7 @@ conda install pytorch pytorch-cuda=11.8 -c pytorch -c nvidia
 conda install transformers pandas matplotlib scikit-learn seaborn nltk pyyaml 
 ```
 
-## Project Structure:
+## Project Structure
 ```
 BERT-Binary-Text-Classification/
 │
