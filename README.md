@@ -2,7 +2,8 @@
 <h2 align="center"> 🚧 Under construction 🚧 </h2>
 
 # Overview
-
+This repository contains a BERT model for binary text classification. 
+The model is implemented in PyTorch and uses the Hugging Face transformers.
 
 ## Install dependencies
 
