@@ -138,11 +138,12 @@ def preprocess_dataframe(df, config):
 
 
 def create_datasets(config, device):
+
     # Read the data_utils and plot the histogram of the content type column.
-    df = pd.read_csv(config.data.data_path)
+    df_multi_class = pd.read_csv(config.data.data_path)
 
     # label mapping to 0 and 1 for negative and positive respectively.
-    df = preprocess_dataframe(df=df, config=config)
+    df = preprocess_dataframe(df=df_multi_class.copy(), config=config)
 
     # Split the dataframe into training, test, and validation sets
     train_df = df.sample(frac=config.data.train_size, random_state=config.general.seed)
@@ -165,8 +166,10 @@ def create_datasets(config, device):
     test_dr = get_dataloader(tokenizer=tokenizer, df=test_df, config=config, device=device)
 
     if config.data.plot_histograms:
+        plot_column_histogram(df_multi_class, column=config.data.class_column, title=f'Dataset Histogram (Multi-class)')
+        plot_column_histogram(df, column='label', title=f'Dataset Histogram')
         for df, name in zip([train_df, val_df, test_df], ['train', 'val', 'test']):
-            plot_column_histogram(df, column='label', title=f'Training set histogram {name}')
+            plot_column_histogram(df, column='label', title=f'{name.upper()} Histogram ')
             print(f'[INFO] {name} set size: {len(df)}')
 
     return train_dr, val_dr, test_dr

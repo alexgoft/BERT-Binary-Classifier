@@ -19,7 +19,7 @@ def calculate_classification_report(y_pred, y_true, output_dir):
 def calculate_confusion_matrix(y_pred, y_true, output_dir):
     """Calculate the confusion matrix and plot it."""
     cm = confusion_matrix(y_true, y_pred)
-    plot_confusion_matrix(cm=cm, y_true=y_true, y_pred=y_pred, output_dir=output_dir)
+    plot_confusion_matrix(cm=cm, output_dir=output_dir)
     print('[INFO] Saving Confusion Matrix...')
 
 

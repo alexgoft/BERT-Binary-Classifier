@@ -1,5 +1,5 @@
 general:
-  mode: "train"  # 'test' or 'train'
+  mode: "test"  # 'test' or 'train'
   output_dir: "outputs"
   seed: 42
 
@@ -23,12 +23,12 @@ data:
 model:
   # BERT versions: "bert-base-uncased", "bert-base-cased"
   # Smaller versions: "prajjwal1/bert-tiny", "prajjwal1/bert-mini", "prajjwal1/bert-small"
-  model_name: "bert-base-uncased"
+  model_name: "bert-base-cased"
   uncased: true  # Tokenizer parameter. Bert uncased or cased (case-sensitive)
   freeze_bert: false  # If True, only train the classifier layers.
   linear_layers_num: 1 # Number of linear layers after the BERT model.
   n_classes: 2
-  max_seq_length: 512
+  max_seq_length: 256
 
 train:
   num_epochs: 5
@@ -46,8 +46,5 @@ train:
   # None - samples randomly from the dataset.
   sampler: null
 test:
-  model_path: "outputs/20231010-160141/model_0.0214.pt"
-  # Threshold for positive class. Used for Confusion Matrix and various
-  # metrics (precision, recall, f1-score, etc.).
-  threshold: 0.5
+  model_path: "outputs/20231010-183809/model_0.49289.pt"
   # TODO - add ROC curve and AUC score.

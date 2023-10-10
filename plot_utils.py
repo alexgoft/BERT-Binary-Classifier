@@ -43,13 +43,13 @@ def plot_column_histogram(df, column, title,
         plt.text(rect.get_x() + rect.get_width() / 2.0,
                  height, height, ha='center', va='bottom')
     plt.title(title)
-    plt.xticks(rotation=20)
+    plt.xticks(list(range(len(classes))), rotation=20)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.show()
 
 
-def plot_confusion_matrix(cm, y_true, y_pred, output_dir):
+def plot_confusion_matrix(cm, output_dir):
     """ Plot the confusion matrix."""
     ax = plt.subplot()
     sns.heatmap(cm, annot=True, ax=ax, cmap='Blues', fmt="d")
