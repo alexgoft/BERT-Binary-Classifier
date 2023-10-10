@@ -82,9 +82,9 @@ def clean_text(text):
             - Remove stopwords
     """
     text = text.replace('\n', ' ')
-    # text = re.sub(r'\d+', '', text)
+    text = re.sub(r'\d+', '', text)
     text = text.translate(str.maketrans('', '', string.punctuation))
-    # text = ' '.join([word for word in text.split() if word not in CACHED_STOP_WORDS])
+    text = ' '.join([word for word in text.split() if word not in CACHED_STOP_WORDS])
     return text
 
 
@@ -166,7 +166,7 @@ def create_datasets(config, device):
 
     if config.data.plot_histograms:
         for df, name in zip([train_df, val_df, test_df], ['train', 'val', 'test']):
-            # plot_column_histogram(df, column='label', title=f'Training set histogram {name}')
+            plot_column_histogram(df, column='label', title=f'Training set histogram {name}')
             print(f'[INFO] {name} set size: {len(df)}')
 
     return train_dr, val_dr, test_dr
