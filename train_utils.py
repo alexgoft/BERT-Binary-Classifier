@@ -117,7 +117,7 @@ def train_epoch(model, optimizer, train_dr, epoch_idx, epochs_num,
     for batch_idx, batch in enumerate(train_dr):
         optimizer.zero_grad()
 
-        loss, _ = model(batch)
+        loss, _, _ = model(batch)
         train_loss += loss.item()
 
         loss.backward()
@@ -176,7 +176,7 @@ def train(config, train_dr, val_dr, model):
         train_loss_list.append(train_loss)
 
         with torch.no_grad():
-            eval_loss, _ = evaluate_on_dataset(model=model, dr=val_dr)
+            eval_loss, _, _ = evaluate_on_dataset(model=model, dr=val_dr)
             valid_loss_list.append(eval_loss)
 
             if eval_loss < best_eval_loss:

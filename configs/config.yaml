@@ -26,10 +26,8 @@ model:
   model_name: "bert-base-uncased"
   uncased: true  # Tokenizer parameter. Bert uncased or cased (case-sensitive)
   freeze_bert: false  # If True, only train the classifier layers.
-  linear_layers_num: 1  # Number of linear layers after the BERT model.
-  # If n_classes > 1, one-hot encoding is used.
-  # else integer encoding is used.
-  n_classes: 1
+  linear_layers_num: 1 # Number of linear layers after the BERT model.
+  n_classes: 2
   max_seq_length: 512
 
 train:
@@ -48,7 +46,7 @@ train:
   # None - samples randomly from the dataset.
   sampler: null
 test:
-  model_path: "outputs/20231010-104806/model_0.54781.pt"
+  model_path: "outputs/20231010-160141/model_0.0214.pt"
   # Threshold for positive class. Used for Confusion Matrix and various
   # metrics (precision, recall, f1-score, etc.).
   threshold: 0.5

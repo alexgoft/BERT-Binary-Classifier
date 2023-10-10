@@ -16,7 +16,7 @@ class BERTNewsClassifier(nn.Module):
 
         self._n_classes = config.model.n_classes
         self._dropout = nn.Dropout(p=config.train.dropout)
-        self._loss_function = nn.BCELoss()
+        self._loss_function = nn.CrossEntropyLoss()
 
         self._initialize_bert(config)
         self._initialize_classification_layer(config)
@@ -55,17 +55,16 @@ class BERTNewsClassifier(nn.Module):
         labels = None
         if "label" in batch:
             labels = batch["label"].to(device=self._device)
-            # labels = torch.Tensor(labels).long()
-            # labels = torch.nn.functional.one_hot(labels, num_classes=self._n_classes).to(torch.float32)
-            labels = labels.unsqueeze(1).to(torch.float32)  # TODO Try with 1 class?
+            labels = torch.Tensor(labels).long()
+            labels = torch.nn.functional.one_hot(labels, num_classes=self._n_classes).to(torch.float32)
 
         output = self._bert(text_tokenized, attention_mask=attention_mask)
         pooled_output = output.pooler_output
         pooled_output = self._dropout(pooled_output)
-        output = self._classifier(pooled_output)
-        output = torch.sigmoid(output)
+        outputs = self._classifier(pooled_output)
 
         loss = 0
         if labels is not None:
-            loss = self._loss_function(output, labels)
-        return loss, output
+            loss = self._loss_function(outputs, labels)
+
+        return loss, labels, outputs
