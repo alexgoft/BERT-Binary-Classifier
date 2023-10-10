@@ -11,8 +11,8 @@ data:
   class_column: "content_type" # Column name of the class.
   plot_histograms: true  # Plot histograms of train, val and test sets.
   # Percentage of the data_utils left for validation (rest is for test).
-  # If 0.6, 60% of the data_utils is used for training, 20% for validation and 20% for test.
-  train_size: 0.6
+  # If 0.7, 70% of the data_utils is for train, 15% for val and 15% for test.
+  train_size: 0.7
   val_size: 0.5
   # If not null, split the text into segments of max_seq_length
   # with overlap of overlap_size words/token. Only for train DF.
@@ -31,7 +31,7 @@ model:
   max_seq_length: 512
 
 train:
-  num_epochs: 7
+  num_epochs: 5
   batch_size: 4
   dropout: 0.3
   early_stopping:
