@@ -17,7 +17,8 @@ def plot_roc_curve(fpr, tpr, roc_auc, output_dir):
     # plt.show()
     plt.savefig(f'{output_dir}/roc_curve.png')
 
-def plot_losses(loss_values, val_losses):
+
+def plot_losses(loss_values, val_losses, output_dir):
     """ Plot the loss of the train and validation sets."""
     x0 = list(range(1, len(loss_values) + 1))
 
@@ -27,7 +28,8 @@ def plot_losses(loss_values, val_losses):
     plt.title('Model loss')
     plt.legend(loc="upper right")
     plt.tight_layout()
-    plt.show()
+    # plt.show()
+    plt.savefig(f'{output_dir}/train_val_loss.png')
 
 
 def plot_column_histogram(df, column, title,
