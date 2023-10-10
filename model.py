@@ -66,5 +66,7 @@ class BERTNewsClassifier(nn.Module):
         loss = 0
         if labels is not None:
             loss = self._loss_function(outputs, labels)
+            # Convert output to probabilities.
+            outputs = torch.nn.functional.softmax(outputs, dim=1)
 
         return loss, labels, outputs
