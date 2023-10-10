@@ -1,4 +1,5 @@
-from functools import partial
+import re
+import string
 
 import pandas as pd
 import torch
@@ -6,7 +7,7 @@ from nltk.corpus import stopwords
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from transformers import BertTokenizer
-
+from functools import partial
 from plot_utils import plot_column_histogram
 from train_utils import get_sampler
 
@@ -71,20 +72,20 @@ def get_dataloader(tokenizer, df, config, device=torch.device('cpu'), sampler=No
     return dr
 
 
-# def clean_text(text):
-#     """ Preprocess the text.
-#         Includes:
-#             - Convert text to lowercase
-#             - Remove newlines
-#             - Remove numbers
-#             - Remove punctuation
-#             - Remove stopwords
-#     """
-#     text = text.replace('\n', ' ')
-#     text = re.sub(r'\d+', '', text)
-#     text = text.translate(str.maketrans('', '', string.punctuation))
-#     text = ' '.join([word for word in text.split() if word not in CACHED_STOP_WORDS])
-#     return text
+def clean_text(text):
+    """ Preprocess the text.
+        Includes:
+            - Convert text to lowercase
+            - Remove newlines
+            - Remove numbers
+            - Remove punctuation
+            - Remove stopwords
+    """
+    text = text.replace('\n', ' ')
+    # text = re.sub(r'\d+', '', text)
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    # text = ' '.join([word for word in text.split() if word not in CACHED_STOP_WORDS])
+    return text
 
 
 def create_segments(text, segment_length=256, overlap=50):
@@ -165,7 +166,7 @@ def create_datasets(config, device):
 
     if config.data.plot_histograms:
         for df, name in zip([train_df, val_df, test_df], ['train', 'val', 'test']):
-            plot_column_histogram(df, column='label', title=f'Training set histogram {name}')
+            # plot_column_histogram(df, column='label', title=f'Training set histogram {name}')
             print(f'[INFO] {name} set size: {len(df)}')
 
     return train_dr, val_dr, test_dr

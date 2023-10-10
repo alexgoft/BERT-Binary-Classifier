@@ -4,6 +4,19 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
+def plot_roc_curve(fpr, tpr, roc_auc, output_dir):
+    """ Plot the ROC curve."""
+    plt.title('Receiver Operating Characteristic')
+    plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
+    plt.legend(loc='lower right')
+    plt.plot([0, 1], [0, 1], 'r--')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.ylabel('True Positive Rate')
+    plt.xlabel('False Positive Rate')
+    # plt.show()
+    plt.savefig(f'{output_dir}/roc_curve.png')
+
 def plot_losses(loss_values, val_losses):
     """ Plot the loss of the train and validation sets."""
     x0 = list(range(1, len(loss_values) + 1))
@@ -36,7 +49,7 @@ def plot_column_histogram(df, column, title,
     plt.show()
 
 
-def plot_confusion_matrix(cm, y_true, y_pred):
+def plot_confusion_matrix(cm, y_true, y_pred, output_dir):
     """ Plot the confusion matrix."""
     ax = plt.subplot()
     sns.heatmap(cm, annot=True, ax=ax, cmap='Blues', fmt="d")
@@ -45,4 +58,5 @@ def plot_confusion_matrix(cm, y_true, y_pred):
     ax.set_ylabel('True Labels')
     ax.xaxis.set_ticklabels(['Not-News', 'News'])
     ax.yaxis.set_ticklabels(['Not-News', 'News'])
-    plt.show()
+    # plt.show()
+    plt.savefig(f'{output_dir}/confusion_matrix.png')
