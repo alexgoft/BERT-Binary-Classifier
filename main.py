@@ -1,8 +1,8 @@
 import torch
 
 from config_file import ConfigFile
-from data_loaders import create_datasets
 from model import BERTNewsClassifier
+from data_utils import create_datasets
 from test_utils import test
 from train_utils import train
 

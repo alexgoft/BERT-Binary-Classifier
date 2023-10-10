@@ -31,11 +31,11 @@ BERT-Binary-Text-Classification/
 ├── configs                   <- Config file directory for different runs.
 │       └── config.yaml 
 ├── config_file.py            <- Configuration class for convinent access to config file
-├── data_loader.py            <- Dataset class and data loading functions. 
+├── model.py                  <- Model architecture and forward pass.
+├── data_utils.py             <- Dataset class and data loading functions. 
 ├── train_utils.py            <- Training loop and its utilitis such as early stopping and samplers.
 ├── test_utils.py             <- Test and evaluation functions.
 ├── plot_utils.py             <- Plot functions (confusion matrix, histograms, etc).
-├── model.py                  <- Model architecture and forward pass.
 └── main.py                   <- Main file to run the project in train or test mode.
 ```
 
