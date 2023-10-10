@@ -8,7 +8,7 @@ data:
   data_class: # The second is the positive class.
     - "not-news"
     - "news"
-  data_column: "content_type" # Column name of the class.
+  class_column: "content_type" # Column name of the class.
   plot_histograms: true  # Plot histograms of train, val and test sets.
   # Percentage of the data_utils left for validation (rest is for test).
   # If 0.6, 60% of the data_utils is used for training, 20% for validation and 20% for test.
@@ -48,5 +48,8 @@ train:
   # None - samples randomly from the dataset.
   sampler: null
 test:
-  model_path: "outputs/20231007-193004/model_0.43864.pt"
-  threshold: 0.5  # Threshold for positive class.
+  model_path: "outputs/20231010-104806/model_0.54781.pt"
+  # Threshold for positive class. Used for Confusion Matrix and various
+  # metrics (precision, recall, f1-score, etc.).
+  threshold: 0.5
+  # TODO - add ROC curve and AUC score.

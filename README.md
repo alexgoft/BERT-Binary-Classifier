@@ -23,19 +23,20 @@ conda install transformers pandas matplotlib scikit-learn seaborn nltk pyyaml
 BERT-Binary-Text-Classification/
 │
 ├── data
-│   └── data_csv.csv          <- data file with text and labels
-├── output                    <- trained models are saved here
-│   └── 20231009-094932       <- output folder with timestamp
-|       └── config.yaml       <- config file of run
-|       └── model_0.45774.pt  <- model checkpoint with best validation accuracy
-├── configs                   <- config files for different runs
-│       └── config.yaml       <- config file with hyperparameters of
-├── config_file.py            <- Configuration class
-├── text_dataset.py
-├── data_utils.py             <- Data preprocessing and tokenization
-├── main.py                   <- main file for training and testing
-├── train_utils.py            <- early stopping and samplers are defined here
-└── model.py                  <- model architecture
+│   └── data_csv.csv          <- Data file with text and labels.
+├── output                    <- Trained models are saved here. 
+│   └── 20231009-094932       <- Output folder with timestamp of run.
+|       └── config.yaml       <- Config file of run.
+|       └── model_0.45774.pt  <- Model checkpoint with best validation accuracy.
+├── configs                   <- Config file directory for different runs.
+│       └── config.yaml 
+├── config_file.py            <- Configuration class for convinent access to config file
+├── data_loader.py            <- Dataset class and data loading functions. 
+├── train_utils.py            <- Training loop and its utilitis such as early stopping and samplers.
+├── test_utils.py             <- Test and evaluation functions.
+├── plot_utils.py             <- Plot functions (confusion matrix, histograms, etc).
+├── model.py                  <- Model architecture and forward pass.
+└── main.py                   <- Main file to run the project in train or test mode.
 ```
 
 ## Config file structure
@@ -44,13 +45,12 @@ general:
   mode: "train"  # 'test' or 'train'
   output_dir: "outputs"
   seed: 42
-
 data:
   data_path: "data/assignment_data_en.csv"
   data_class: # The second is the positive class.
     - "not-news"
     - "news"
-  data_column: "content_type" # Column name of the class.
+  class_column: "content_type" # Column name of the class.
   plot_histograms: true  # Plot histograms of train, val and test sets.
   # Percentage of the data_utils left for validation (rest is for test).
   # If 0.6, 60% of the data_utils is used for training, 20% for validation and 20% for test.
@@ -61,8 +61,6 @@ data:
   split_text: null
 #  split_text:
 #    overlap_size: 50
-
-
 model:
   # BERT versions: "bert-base-uncased", "bert-base-cased"
   # Smaller versions: "prajjwal1/bert-tiny", "prajjwal1/bert-mini", "prajjwal1/bert-small"
@@ -74,7 +72,6 @@ model:
   # else integer encoding is used.
   n_classes: 1
   max_seq_length: 512
-
 train:
   num_epochs: 7
   batch_size: 4
@@ -90,8 +87,10 @@ train:
   # "BalancedBatchSampler" - samples batches with equal number of samples from each class.
   # None - samples randomly from the dataset.
   sampler: null
-
 test:
-  model_path: "outputs/20231007-193004/model_0.43864.pt"
-  threshold: 0.5  # Threshold for positive class.
+  model_path: "outputs/20231010-104806/model_0.54781.pt"
+  # Threshold for positive class. Used for Confusion Matrix and various
+  # metrics (precision, recall, f1-score, etc.).
+  threshold: 0.5
+  # TODO - add ROC curve and AUC score.
 ```

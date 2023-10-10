@@ -5,6 +5,7 @@ import seaborn as sns
 
 
 def plot_losses(loss_values, val_losses):
+    """ Plot the loss of the train and validation sets."""
     x0 = list(range(1, len(loss_values) + 1))
 
     # Plot loss of train and validation sets.
@@ -16,7 +17,9 @@ def plot_losses(loss_values, val_losses):
     plt.show()
 
 
-def plot_column_histogram(df, column, title):
+def plot_column_histogram(df, column, title,
+                          x_label='Text type', y_label='Number of texts'):  # TODO: Generalize this.
+    """ Plot the histogram of a column in a dataframe."""
     classes = Counter(df[column])
     number_of_texts = list(classes.values())
     text_type = list(classes.keys())
@@ -28,12 +31,13 @@ def plot_column_histogram(df, column, title):
                  height, height, ha='center', va='bottom')
     plt.title(title)
     plt.xticks(rotation=20)
-    plt.xlabel('Text type')
-    plt.ylabel('Number of texts')
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
     plt.show()
 
 
 def plot_confusion_matrix(cm, y_true, y_pred):
+    """ Plot the confusion matrix."""
     ax = plt.subplot()
     sns.heatmap(cm, annot=True, ax=ax, cmap='Blues', fmt="d")
     ax.set_title('Confusion Matrix')

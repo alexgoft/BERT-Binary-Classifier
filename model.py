@@ -25,12 +25,15 @@ class BERTNewsClassifier(nn.Module):
         self.to(device)
 
     def _initialize_bert(self, config):
+        """Initialize the BERT model. Load the pre-trained weights from transformers library."""
         self._bert = BertModel.from_pretrained(config.model.model_name, return_dict=True)
         if config.model.freeze_bert:
             for param in self._bert.parameters():
                 param.requires_grad = False
 
     def _initialize_classification_layer(self, config):
+        """Initialize the classification layer.
+           It is a linear layer that takes the output of the BERT model."""
         if config.model.linear_layers_num == 1:
             self._classifier = nn.Linear(self._bert.config.hidden_size, self._n_classes)
         elif config.model.linear_layers_num == 2:

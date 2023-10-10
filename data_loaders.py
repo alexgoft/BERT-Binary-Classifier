@@ -1,17 +1,66 @@
 from functools import partial
 
-import torch
 import pandas as pd
-
+import torch
 from nltk.corpus import stopwords
 from torch.utils.data import DataLoader
+from torch.utils.data import Dataset
 from transformers import BertTokenizer
 
-from text_dataset import TextDataset
 from plot_utils import plot_column_histogram
 from train_utils import get_sampler
 
 CACHED_STOP_WORDS = stopwords.words("english")
+
+
+class TextDataset(Dataset):
+    """
+    This class is used to create a dataset from a dataframe.
+    """
+
+    def __init__(
+            self,
+            data: pd.DataFrame,
+            tokenizer: BertTokenizer,
+            max_token_len: int = 128,
+            label_col: str = 'label',
+            data_col: str = 'text',
+            device: torch.device = torch.device('cpu')
+    ):
+        self.tokenizer = tokenizer
+        self.data = data
+        self.max_token_len = max_token_len
+        self.device = device
+
+        # Column names for the data_utils and the labels
+        self.data_col = data_col
+        self.label_col = label_col
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index: int):
+        data_row = self.data.iloc[index]
+
+        text = data_row[self.data_col]
+        text = text[-self.max_token_len:]  # Use the last max_token_len tokens.
+        label = data_row[self.label_col]
+        encoding = self.tokenizer.encode_plus(
+            text,
+            add_special_tokens=True,
+            max_length=self.max_token_len,
+            pad_to_max_length=True,
+            truncation=True,
+            return_attention_mask=True,
+            return_tensors='pt',
+        )
+
+        return dict(
+            text=text,
+            label=label,
+            text_tokenized=encoding["input_ids"].flatten(),
+            attention_mask=encoding["attention_mask"].flatten()
+        )
 
 
 def get_dataloader(tokenizer, df, config, device=torch.device('cpu'), sampler=None):
@@ -22,24 +71,20 @@ def get_dataloader(tokenizer, df, config, device=torch.device('cpu'), sampler=No
     return dr
 
 
-def clean_text(text):
-    """ Preprocess the text.
-        Includes:
-            - Convert text to lowercase
-            - Remove newlines
-            - Remove numbers
-            - Remove punctuation
-            - Remove stopwords
-    """
-    # Preprocess the text might not be necessary for BERT.
-    # https://stackoverflow.com/questions/70649831/does-bert-model-need-text
-    # https://datascience.stackexchange.com/questions/113359/why-there-is-no-preprocessing-step-for-training-bert
-
-    # text = text.replace('\n', ' ')
-    # text = re.sub(r'\d+', '', text)
-    # text = text.translate(str.maketrans('', '', string.punctuation))
-    # text = ' '.join([word for word in text.split() if word not in CACHED_STOP_WORDS])
-    return text
+# def clean_text(text):
+#     """ Preprocess the text.
+#         Includes:
+#             - Convert text to lowercase
+#             - Remove newlines
+#             - Remove numbers
+#             - Remove punctuation
+#             - Remove stopwords
+#     """
+#     text = text.replace('\n', ' ')
+#     text = re.sub(r'\d+', '', text)
+#     text = text.translate(str.maketrans('', '', string.punctuation))
+#     text = ' '.join([word for word in text.split() if word not in CACHED_STOP_WORDS])
+#     return text
 
 
 def create_segments(text, segment_length=256, overlap=50):
@@ -63,27 +108,30 @@ def preprocess_dataframe(df, config):
         - Change the column names to be more descriptive. And drop the original columns.
         - Preprocess the text (lowercase, remove punctuation, remove stopwords).
     """
-    data_column = config.data.data_column
+    class_column = config.data.class_column
     positive_class = config.data.data_class[1]
     negative_class = config.data.data_class[0]
     label_map = {positive_class: 1, negative_class: 0}
     # Binaries the content type column. i.e 1 for news and 0 for non-news.
-    df[data_column] = df[data_column].apply(
+    df[class_column] = df[class_column].apply(
         lambda x: positive_class if x == positive_class else negative_class)
 
     # label mapping to 0 and 1 for non-news and news respectively.
-    df['label'] = df[data_column].map(label_map)
+    df['label'] = df[class_column].map(label_map)
 
     # Change the column names to be more descriptive. And drop the original columns.
     # This is useful when we want to use the same code for other datasets.
+    # TODO make this more generic.
     df['text'] = df['scraped_title'] + ' ' + df['scraped_text']
     df = df[['label', 'text']]
 
     # Drop duplicates in the text column
     df = df.drop_duplicates(subset='text', keep='first')
 
-    # Preprocess the text
-    df['text'] = df['text'].apply(clean_text)
+    # Preprocess the text might not be necessary for BERT.
+    #   https://stackoverflow.com/questions/70649831/does-bert-model-need-text
+    #   https://datascience.stackexchange.com/questions/113359/why-there-is-no-preprocessing-step-for-training-bert
+    # df['text'] = df['text'].apply(clean_text)
 
     return df
 
