@@ -137,8 +137,7 @@ def preprocess_dataframe(df, config):
     return df
 
 
-def create_datasets(config, device):
-
+def create_datasets(config, device, output_dir_path):
     # Read the data_utils and plot the histogram of the content type column.
     df_multi_class = pd.read_csv(config.data.data_path)
 
@@ -166,10 +165,10 @@ def create_datasets(config, device):
     test_dr = get_dataloader(tokenizer=tokenizer, df=test_df, config=config, device=device)
 
     if config.data.plot_histograms:
-        plot_column_histogram(df_multi_class, column=config.data.class_column, title=f'Dataset Histogram (Multi-class)')
-        plot_column_histogram(df, column='label', title=f'Dataset Histogram')
+        plot_column_histogram(df_multi_class, column=config.data.class_column, title=f'Dataset Histogram (Multi-class)', output_dir_path=output_dir_path)
+        plot_column_histogram(df, column='label', title=f'Dataset Histogram', output_dir_path=output_dir_path)
         for df, name in zip([train_df, val_df, test_df], ['train', 'val', 'test']):
-            plot_column_histogram(df, column='label', title=f'{name.upper()} Histogram ')
+            plot_column_histogram(df, column='label', title=f'{name.upper()} Histogram ', output_dir_path=output_dir_path)
             print(f'[INFO] {name} set size: {len(df)}')
 
     return train_dr, val_dr, test_dr

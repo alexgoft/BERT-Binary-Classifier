@@ -32,14 +32,9 @@ def calculate_auc(y_true, y_pred, output_dir):
     plot_roc_curve(fpr, tpr, roc_auc, output_dir)
 
 
-def test(config, test_dr, model):
+def test(config, test_dr, model, output_dir):
     """Test the model on the test set. Print classification report and plot confusion matrix."""
     model.load_model(model_path=config.test.model_path)
-
-    model_name = config.test.model_path.rpartition('/')[-1].split('.pt')[0].replace('.', '_')
-    model_output_dir = config.test.model_path.rpartition('/')[0]
-    metrics_output_dir = f'{model_output_dir}/{model_name}_metrics'
-    os.makedirs(metrics_output_dir, exist_ok=True)
 
     # Evaluate the model on the test set.
     test_loss, outputs, labels = evaluate_on_dataset(model=model, dr=test_dr)
@@ -49,11 +44,11 @@ def test(config, test_dr, model):
     y_pred = [np.argmax(output) for output in outputs]
     y_true = [np.argmax(label) for label in labels]
 
-    calculate_classification_report(y_pred, y_true, output_dir=metrics_output_dir)
-    calculate_confusion_matrix(y_pred, y_true, output_dir=metrics_output_dir)
+    calculate_classification_report(y_pred, y_true, output_dir=output_dir)
+    calculate_confusion_matrix(y_pred, y_true, output_dir=output_dir)
 
     # y_pred is the probability of the positive class.
-    calculate_auc(y_true, np.array(outputs)[:, 1], output_dir=metrics_output_dir)
+    calculate_auc(y_true, np.array(outputs)[:, 1], output_dir=output_dir)
     print('[INFO] Done.')
 
 

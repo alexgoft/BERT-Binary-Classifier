@@ -1,4 +1,6 @@
 import torch
+import os
+import time
 
 from config_file import ConfigFile
 from model import BERTNewsClassifier
@@ -21,7 +23,27 @@ from train_utils import train
 #                                #
 # <><><><><><><><><><><><><><><> #
 
-CFG_PATH = 'configs/config.yaml'
+CFG_PATH = 'outputs\\20231010-210438\\config.yaml'
+
+
+# TODO: Move this to a utils file?
+def get_output_dir_path(config):
+    # If training, create a new directory for the run.
+    if config.general.mode == 'train':
+        output_dir_path = os.path.join(config.general.output_dir,
+                                       time.strftime("%Y%m%d-%H%M%S"))
+
+    # If testing, use the model's output directory.
+    elif config.general.mode == 'test':
+        model_name = config.test.model_path.rpartition('/')[-1].split('.pt')[0].replace('.', '_')
+        model_output_dir = config.test.model_path.rpartition('/')[0]
+        output_dir_path = f'{model_output_dir}/{model_name}_metrics'
+
+    else:
+        raise ValueError(f'Unknown mode: {config.general.mode}')
+
+    os.makedirs(output_dir_path, exist_ok=True)
+    return output_dir_path
 
 
 def main(config, mode='train'):
@@ -29,15 +51,21 @@ def main(config, mode='train'):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"[INFO] Using device: {device}")
 
+    # Create output directory for the model and save the config file.
+    output_dir_path = get_output_dir_path(config)
+
     # Create model and datasets.
     model = BERTNewsClassifier(config=config, device=device)
-    train_dr, val_dr, test_dr = create_datasets(config=config, device=device)
+    train_dr, val_dr, test_dr = create_datasets(config=config, device=device, output_dir_path=output_dir_path)
 
     # Train and test.
     if mode == 'train':
-        train(config, train_dr, val_dr, model)
+        # Save the config file of current run to the output directory.
+        config.save_config(os.path.join(output_dir_path, 'config.yaml'))
+
+        train(config, train_dr, val_dr, model, output_dir_path)
     elif mode == 'test':
-        test(config, test_dr, model)
+        test(config, test_dr, model, output_dir_path)
 
 
 if __name__ == '__main__':

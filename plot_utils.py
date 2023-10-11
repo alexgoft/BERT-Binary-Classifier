@@ -4,6 +4,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
+def reset_plot():
+    """ Reset the plot."""
+    plt.clf()
+    plt.cla()
+    plt.close()
+
+
 def plot_roc_curve(fpr, tpr, roc_auc, output_dir):
     """ Plot the ROC curve."""
     plt.title('Receiver Operating Characteristic')
@@ -16,6 +23,7 @@ def plot_roc_curve(fpr, tpr, roc_auc, output_dir):
     plt.xlabel('False Positive Rate')
     # plt.show()
     plt.savefig(f'{output_dir}/roc_curve.png')
+    reset_plot()
 
 
 def plot_losses(loss_values, val_losses, output_dir):
@@ -30,10 +38,12 @@ def plot_losses(loss_values, val_losses, output_dir):
     plt.tight_layout()
     # plt.show()
     plt.savefig(f'{output_dir}/train_val_loss.png')
+    reset_plot()
 
 
-def plot_column_histogram(df, column, title,
-                          x_label='Text type', y_label='Number of texts'):  # TODO: Generalize this.
+def plot_column_histogram(df, column, title, output_dir_path,
+                          # TODO: Generalize this.
+                          x_label='Text type', y_label='Number of texts'):
     """ Plot the histogram of a column in a dataframe."""
     classes = Counter(df[column])
     number_of_texts = list(classes.values())
@@ -48,7 +58,10 @@ def plot_column_histogram(df, column, title,
     plt.xticks(list(range(len(classes))), rotation=20)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
-    plt.show()
+    # plt.show()
+    title = title.replace(' ', '_')
+    plt.savefig(f'{output_dir_path}/{title}.png')
+    reset_plot()
 
 
 def plot_confusion_matrix(cm, output_dir):
@@ -62,3 +75,4 @@ def plot_confusion_matrix(cm, output_dir):
     ax.yaxis.set_ticklabels(['Not-News', 'News'])
     # plt.show()
     plt.savefig(f'{output_dir}/confusion_matrix.png')
+    reset_plot()

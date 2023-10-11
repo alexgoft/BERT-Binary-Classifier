@@ -1,5 +1,4 @@
 import os
-import time
 
 import numpy as np
 import torch
@@ -134,12 +133,7 @@ def train_epoch(model, optimizer, train_dr, epoch_idx, epochs_num,
     return round(train_loss / len(train_dr), 5)
 
 
-def train(config, train_dr, val_dr, model):
-    # Create output directory for the model and save the config file.
-    output_dir_path = os.path.join(config.general.output_dir,
-                                   time.strftime("%Y%m%d-%H%M%S"))
-    os.makedirs(output_dir_path)
-    config.save_config(os.path.join(output_dir_path, 'config.yaml'))
+def train(config, train_dr, val_dr, model, output_dir_path):
 
     # Initialize the early_stopping object.
     # If the validation loss does not improve after 'patience' epoch, stop training.
@@ -198,4 +192,4 @@ def train(config, train_dr, val_dr, model):
             break
 
     print(f'[INFO] Training finished. Output directory: {output_dir_path}')
-    plot_losses(loss_values=train_loss_list, val_losses=valid_loss_list)
+    plot_losses(loss_values=train_loss_list, val_losses=valid_loss_list, output_dir=output_dir_path)
