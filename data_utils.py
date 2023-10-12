@@ -12,6 +12,7 @@ from plot_utils import plot_column_histogram
 from train_utils import get_sampler
 
 CACHED_STOP_WORDS = stopwords.words("english")
+SEED = 42069666
 
 
 class TextDataset(Dataset):
@@ -67,6 +68,7 @@ class TextDataset(Dataset):
 def get_dataloader(tokenizer, df, config, device=torch.device('cpu'), sampler=None):
     """Create dataloader for the given dataframe."""
     ds = TextDataset(df, tokenizer=tokenizer, max_token_len=config.model.max_seq_length, device=device)
+    # TODO Pass somehow seed to the dataloader.
     dr = DataLoader(ds, batch_size=config.train.batch_size,
                     shuffle=True if sampler is None else False, sampler=sampler)
     return dr
@@ -145,7 +147,7 @@ def create_datasets(config, device, output_dir_path):
     df = preprocess_dataframe(df=df_multi_class.copy(), config=config)
 
     # Split the dataframe into training, test, and validation sets
-    train_df = df.sample(frac=config.data.train_size, random_state=config.general.seed)
+    train_df = df.sample(frac=config.data.train_size, random_state=SEED)
 
     # Split the text into segments of seq_length tokens and overlap of 50 tokens.
     if config.data.split_text is not None:
@@ -154,7 +156,7 @@ def create_datasets(config, device, output_dir_path):
                                                           overlap=config.data.split_text.overlap_size))
         train_df = train_df.explode('text')
 
-    val_df = df.drop(train_df.index).sample(frac=config.data.val_size, random_state=config.general.seed)
+    val_df = df.drop(train_df.index).sample(frac=config.data.val_size, random_state=SEED)
     test_df = df.drop(train_df.index).drop(val_df.index)
 
     sampler = get_sampler(train_df, config)

@@ -54,7 +54,7 @@ def plot_column_histogram(df, column, title, output_dir_path,
         height = rect.get_height()
         plt.text(rect.get_x() + rect.get_width() / 2.0,
                  height, height, ha='center', va='bottom')
-    plt.title(title)
+    plt.title(title + f' (Total: {len(df)})')
     plt.xticks(list(range(len(classes))), rotation=20)
     plt.xlabel(x_label)
     plt.ylabel(y_label)

@@ -1,8 +1,3 @@
-general:
-  mode: "train"  # 'test' or 'train'
-  output_dir: "outputs"
-  seed: 42
-
 data:
   data_path: "data/assignment_data_en.csv"
   data_class: # The second is the positive class.
@@ -17,9 +12,9 @@ data:
 
   # If not null, split the text into segments of max_seq_length
   # with overlap of overlap_size words/token. Only for train DF.
-#  split_text: null
-  split_text:
-    overlap_size: 50
+  split_text: null
+#  split_text:
+#    overlap_size: 50
 
 model:
   # BERT versions: "bert-base-uncased", "bert-base-cased"
@@ -46,6 +41,7 @@ train:
   # "BalancedBatchSampler" - samples batches with equal number of samples from each class.
   # null - samples randomly from the dataset.
   sampler: null
+
 test:
   # All the metrics will be saved to a directory with
   # the same name as the model with the suffix "_metrics".
