@@ -34,8 +34,6 @@ def calculate_auc(y_true, y_pred, output_dir):
 
 def test(config, test_dr, model, output_dir):
     """Test the model on the test set. Print classification report and plot confusion matrix."""
-    model.load_model(model_path=config.test.model_path)
-
     # Evaluate the model on the test set.
     test_loss, outputs, labels = evaluate_on_dataset(model=model, dr=test_dr)
     print(f'[INFO] Test loss: {test_loss}')

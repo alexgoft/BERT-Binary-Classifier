@@ -32,7 +32,7 @@ CFG_PATH = 'configs/config.yaml'
 # path to config file is taken from the model's output directory.
 # All the metrics will be saved to a directory with the same name
 # as the model with the suffix "_metrics".
-MODEL_PATH = 'outputs/20231010-210438/model_0.43796.pt'
+MODEL_PATH = 'outputs/20231012-121624/model_0.49529.pt'
 
 
 def run(output_dir_path, config_path, mode='train'):
@@ -51,13 +51,15 @@ def run(output_dir_path, config_path, mode='train'):
                                                 device=device,
                                                 output_dir_path=output_dir_path)
 
-    # Train and test.
     if mode == 'train':
         # Save the config file of current run to the output directory.
         config.save_config(os.path.join(output_dir_path, 'config.yaml'))
 
         train(config, train_dr, val_dr, model, output_dir_path)
     elif mode == 'test':
+        # Load the model checkpoint from the specified path.
+        model.load_model(model_path=MODEL_PATH)
+
         test(config, test_dr, model, output_dir_path)
 
 
