@@ -86,26 +86,33 @@ The directory contains the following files:
 
 ## Project Structure
 ```
-BERT-Binary-Text-Classification/
-│
-├── data
-│   └── data_csv.csv
-├── output
-│   └── 20231009-094932.
-|       └── train_val_loss.png
-|       └── config.yaml
-|       └── model_0.45774.pt
-|              └── model_0_45774_metrics
-|                  └── classification_report.txt
-|                  └── confusion_matrix.png
-|                  └── roc_curve.png
-├── configs
-│       └── config.yaml 
-├── config_file.py
-├── model.py
-├── data_utils.py
-├── train_utils.py
-├── test_utils.py
-├── plot_utils.py
-└── main.py
+BERT-Text-Classifier\
+ª
+ª           
++---configs
+ª       config.yaml
+ª       
++---outputs
+ª   +---20231012-121624/
+ª   ª   ª   config.yaml
+ª   ª   +---model_0.49529.pt
+ª   ª   +---data_plots/
+ª   ª           dataset_histogram.png
+ª   ª           dataset_histogram_(multi-class).png
+ª   ª           test_histogram.png
+ª   ª           train_histogram.png
+ª   ª           train_word_count_histogram.png
+ª   ª           val_histogram.png
+ª   ª   +---model_0_49529_metrics/
+ª   ª           classification_report.txt
+ª   ª           confusion_matrix.png
+ª   ª           roc_curve.png
+ª   ª
+ª   main.py
+ª   model.py
+ª   plot_utils.py
+ª   test_utils.py
+ª   train_utils.py
+ª   data_utils.py
+ª   config_file.py
 ```

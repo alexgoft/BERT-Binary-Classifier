@@ -28,7 +28,7 @@ model:
   max_seq_length: 128  # Max sequence length for BERT model.
 
 train:
-  num_epochs: 10
+  num_epochs: 5
   batch_size: 32
   dropout: 0.4
   early_stopping:
@@ -38,7 +38,8 @@ train:
   lr: 1.0e-05
   weight_decay: 0.01
   # Samplers are used to specify how to sample from the dataset.
-  # "WeightedRandomSampler" - samples with probability proportional to class weights.
+  # "WeightedRandomSampler" - samples with probability proportional to class weights
+  #     (larger weights for under-represented classes).
   # "BalancedBatchSampler" - samples batches with equal number of samples from each class.
   # null - samples randomly from the dataset.
   sampler: "WeightedRandomSampler"

@@ -1,6 +1,6 @@
 import re
 import string
-
+import os
 import pandas as pd
 import torch
 from nltk.corpus import stopwords
@@ -180,22 +180,25 @@ def create_datasets(config, device, output_dir_path):
     test_dr = get_dataloader(tokenizer=tokenizer, df=test_df, config=config, device=device)
 
     if config.data.plot_histograms:
+        plots_dir = os.path.join(output_dir_path, 'data_plots')
+        os.makedirs(plots_dir, exist_ok=True)
+
         plot_column_histogram(df_multi_class, column=config.data.class_column,
                               title=f'Dataset Histogram (Multi-class)',
-                              output_dir_path=output_dir_path)
+                              output_dir_path=plots_dir)
         plot_column_histogram(df, column='label',
                               title=f'Dataset Histogram',
-                              output_dir_path=output_dir_path)
+                              output_dir_path=plots_dir)
         for df, name in zip([train_df, val_df, test_df], ['train', 'val', 'test']):
             plot_column_histogram(df, column='label',
-                                  title=f'{name.upper()} Histogram ',
-                                  output_dir_path=output_dir_path)
+                                  title=f'{name.upper()} Histogram',
+                                  output_dir_path=plots_dir)
             if name == 'train':
                 plot_column_histogram(df, column='word_count',
                                       title=f'{name.upper()} Word Count Histogram',
                                       x_label='Number of Words', y_label='Frequency',
                                       add_text_to_bars_and_ticks=False,
-                                      output_dir_path=output_dir_path)
+                                      output_dir_path=plots_dir)
             print(f'[INFO] {name} set size: {len(df)}')
 
     return train_dr, val_dr, test_dr
