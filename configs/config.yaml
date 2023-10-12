@@ -41,8 +41,3 @@ train:
   # "BalancedBatchSampler" - samples batches with equal number of samples from each class.
   # null - samples randomly from the dataset.
   sampler: null
-
-test:
-  # All the metrics will be saved to a directory with
-  # the same name as the model with the suffix "_metrics".
-  model_path: "outputs/20231010-210438/model_0.43796.pt"
