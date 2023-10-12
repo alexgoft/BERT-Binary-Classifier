@@ -117,7 +117,7 @@ def preprocess_dataframe(df, config):
     label_map = {positive_class: 1, negative_class: 0}
     # Binaries the content type column. i.e 1 for news and 0 for non-news.
     df[class_column] = df[class_column].apply(
-        lambda x: positive_class if x == positive_class else negative_class)
+        lambda x: positive_class if positive_class in x.lower() else negative_class)
 
     # label mapping to 0 and 1 for non-news and news respectively.
     df['label'] = df[class_column].map(label_map)
@@ -125,8 +125,11 @@ def preprocess_dataframe(df, config):
     # Change the column names to be more descriptive. And drop the original columns.
     # This is useful when we want to use the same code for other datasets.
     # TODO make this more generic.
-    df['text'] = df['scraped_title'] + ' ' + df['scraped_text']
+    df['text'] = df['headline'] + ' ' + df['short_description']
     df = df[['label', 'text']]
+
+    # Add word count column. Useful for choosing the max_seq_length.
+    df['word_count'] = df['text'].apply(lambda x: len(str(x).split()))
 
     # Drop duplicates in the text column
     df = df.drop_duplicates(subset='text', keep='first')
@@ -139,9 +142,19 @@ def preprocess_dataframe(df, config):
     return df
 
 
+def get_dataset_df(data_path):
+    """Get the dataset dataframe."""
+    if data_path.endswith('.csv'):
+        df = pd.read_csv(data_path)
+    elif data_path.endswith('.json'):
+        df = pd.read_json(data_path, lines=True)
+    else:
+        raise ValueError(f'Unknown file format: {data_path}')
+    return df
+
+
 def create_datasets(config, device, output_dir_path):
-    # Read the data_utils and plot the histogram of the content type column.
-    df_multi_class = pd.read_csv(config.data.data_path)
+    df_multi_class = get_dataset_df(data_path=config.data.data_path)
 
     # label mapping to 0 and 1 for negative and positive respectively.
     df = preprocess_dataframe(df=df_multi_class.copy(), config=config)
@@ -177,6 +190,12 @@ def create_datasets(config, device, output_dir_path):
             plot_column_histogram(df, column='label',
                                   title=f'{name.upper()} Histogram ',
                                   output_dir_path=output_dir_path)
+            if name == 'train':
+                plot_column_histogram(df, column='word_count',
+                                      title=f'{name.upper()} Word Count Histogram',
+                                      x_label='Number of Words', y_label='Frequency',
+                                      add_text_to_bars_and_ticks=False,
+                                      output_dir_path=output_dir_path)
             print(f'[INFO] {name} set size: {len(df)}')
 
     return train_dr, val_dr, test_dr

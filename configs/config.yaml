@@ -1,9 +1,9 @@
 data:
-  data_path: "data/assignment_data_en.csv"
+  data_path: "data/News_Category_Dataset_v3.json" # Can be a CSV or JSON file.
   data_class: # The second is the positive class.
     - "not-news"
     - "news"
-  class_column: "content_type" # Column name of the class.
+  class_column: "category" # Column name of the class.
   plot_histograms: true  # Plot histograms of train, val and test sets.
   # Percentage of the data_utils left for validation (rest is for test).
   # If 0.7, 70% of the data_utils is for train, 15% for val and 15% for test.
@@ -12,6 +12,7 @@ data:
 
   # If not null, split the text into segments of max_seq_length
   # with overlap of overlap_size words/token. Only for train DF.
+  # useful for long texts.
   split_text: null
 #  split_text:
 #    overlap_size: 50
@@ -19,16 +20,16 @@ data:
 model:
   # BERT versions: "bert-base-uncased", "bert-base-cased"
   # Smaller versions: "prajjwal1/bert-tiny", "prajjwal1/bert-mini", "prajjwal1/bert-small"
-  model_name: "bert-base-uncased"
+  model_name: "prajjwal1/bert-small"
   uncased: true  # Tokenizer parameter. Bert uncased or cased (case-sensitive)
   freeze_bert: false  # If True, only train the classifier layers.
   linear_layers_num: 1 # Number of linear layers after the BERT model.
   n_classes: 2  # TODO: Support more than 2 classes.
-  max_seq_length: 512  # Max sequence length for BERT model.
+  max_seq_length: 128  # Max sequence length for BERT model.
 
 train:
   num_epochs: 10
-  batch_size: 4
+  batch_size: 32
   dropout: 0.4
   early_stopping:
     min_delta: 0 # Minimum change in the monitored quantity to qualify as an improvement.
@@ -40,4 +41,4 @@ train:
   # "WeightedRandomSampler" - samples with probability proportional to class weights.
   # "BalancedBatchSampler" - samples batches with equal number of samples from each class.
   # null - samples randomly from the dataset.
-  sampler: null
+  sampler: "WeightedRandomSampler"

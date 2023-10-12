@@ -42,24 +42,26 @@ def plot_losses(loss_values, val_losses, output_dir):
 
 
 def plot_column_histogram(df, column, title, output_dir_path,
-                          # TODO: Generalize this.
-                          x_label='Text type', y_label='Number of texts'):
+                          x_label='Text type', y_label='Number of texts',  # TODO: Generalize this.
+                          add_text_to_bars_and_ticks=True):
     """ Plot the histogram of a column in a dataframe."""
-    classes = Counter(df[column])
-    number_of_texts = list(classes.values())
-    text_type = list(classes.keys())
+    histogram_dict = Counter(df[column])
+    number_of_bars = list(histogram_dict.values())
+    bar_names = list(histogram_dict.keys())
 
-    bars = plt.bar(text_type, number_of_texts)
-    for rect in bars:
-        height = rect.get_height()
-        plt.text(rect.get_x() + rect.get_width() / 2.0,
-                 height, height, ha='center', va='bottom')
+    bars = plt.bar(bar_names, number_of_bars)
+    if add_text_to_bars_and_ticks:
+        for rect in bars:
+            height = rect.get_height()
+            plt.text(rect.get_x() + rect.get_width() / 2.0,
+                     height, height, ha='center', va='bottom')
+        plt.xticks(list(range(len(histogram_dict))), rotation=20)
+
     plt.title(title + f' (Total: {len(df)})')
-    plt.xticks(list(range(len(classes))), rotation=20)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     # plt.show()
-    title = title.replace(' ', '_')
+    title = title.replace(' ', '_').lower()
     plt.savefig(f'{output_dir_path}/{title}.png')
     reset_plot()
 

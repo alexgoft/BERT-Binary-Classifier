@@ -23,7 +23,7 @@ from train_utils import train
 #                                #
 # <><><><><><><><><><><><><><><> #
 
-MODE = 'test'
+MODE = 'train'
 
 # If mode is 'train', this is the path to the config file.
 CFG_PATH = 'configs/config.yaml'
